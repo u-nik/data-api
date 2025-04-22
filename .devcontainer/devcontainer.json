@@ -1,0 +1,50 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/go
+{
+    "name": "Data-API",
+    // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+    // "image": "mcr.microsoft.com/devcontainers/go:1-1.22-bookworm",
+    "dockerComposeFile": "compose.yml",
+    "workspaceFolder": "/workspace",
+    "service": "devcontainer",
+
+    // Features to add to the dev container. More info: https://containers.dev/features.
+    // "features": {},
+
+    // Configure tool-specific properties.
+    "customizations": {
+        // Configure properties specific to VS Code.
+        "vscode": {
+            "settings": {},
+            "extensions": [
+                "streetsidesoftware.code-spell-checker",
+                "humao.rest-client",
+                "golang.go",
+                "redhat.vscode-yaml",
+                "DavidAnson.vscode-markdownlint",
+                "yzhang.markdown-all-in-one",
+                "bierner.github-markdown-preview",
+                "foxundermoon.shell-format",
+                "franneck94.workspace-formatter"
+            ]
+        }
+    },
+
+    // Use 'forwardPorts' to make a list of ports inside the container available locally.
+    "forwardPorts": [8080],
+
+    // Use 'portsAttributes' to set default properties for specific forwarded ports.
+    // More info: https://containers.dev/implementors/json_reference/#port-attributes
+    "portsAttributes": {
+        "8080": {
+            "label": "Backend API",
+            "onAutoForward": "notify"
+        }
+    },
+
+    // Use 'postCreateCommand' to run commands after the container is created.
+    "postCreateCommand": "go version && go mod tidy",
+
+    // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+    "remoteUser": "root"
+}

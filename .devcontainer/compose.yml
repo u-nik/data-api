@@ -1,0 +1,20 @@
+name: data-api
+services:
+    devcontainer:
+        image: mcr.microsoft.com/devcontainers/go:1-1.24-bookworm
+        tty: true
+        volumes:
+            - ../:/workspace:cached
+        working_dir: /workspace
+
+    nats:
+        image: nats:2.11-alpine
+        ports:
+            - '8087:4222'
+            - '8088:8222'
+        command: ['-js']
+
+    redis:
+        image: redis:7-alpine
+        ports:
+            - '8089:6379'
