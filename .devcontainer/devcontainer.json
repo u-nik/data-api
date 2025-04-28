@@ -25,7 +25,9 @@
                 "yzhang.markdown-all-in-one",
                 "bierner.github-markdown-preview",
                 "foxundermoon.shell-format",
-                "franneck94.workspace-formatter"
+                "franneck94.workspace-formatter",
+                "ms-azuretools.vscode-docker",
+                "esbenp.prettier-vscode"
             ]
         }
     },

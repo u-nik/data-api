@@ -1,7 +1,7 @@
 name: data-api
 services:
     devcontainer:
-        image: mcr.microsoft.com/devcontainers/go:1-1.24-bookworm
+        build: ./images/devcontainer
         tty: true
         volumes:
             - ../:/workspace:cached

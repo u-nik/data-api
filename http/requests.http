@@ -1,0 +1,14 @@
+# @name createUser
+POST http://localhost:8080/users
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john.doe@localhost.test",
+  "foo": "bar"
+}
+
+###
+
+GET http://localhost:8080/users/{{createUser.response.body.$.id}}
+Content-Type: application/json

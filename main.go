@@ -12,8 +12,8 @@ import (
 )
 
 type UserRegistered struct {
-	ID    string `json:"id"`
-	Email string `json:"email"`
+	ID    string `json:"id" jsonschema:"uuid"`
+	Email string `json:"email" jsonschema:"email"`
 }
 
 var (
@@ -51,7 +51,12 @@ func main() {
 			return
 		}
 
-		id := uuid.New().String()
+		uuidObj, err := uuid.NewV7()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate UUID"})
+			return
+		}
+		id := uuidObj.String()
 		event := UserRegistered{ID: id, Email: input.Email}
 		data, _ := json.Marshal(event)
 		js.Publish(subject, data)
