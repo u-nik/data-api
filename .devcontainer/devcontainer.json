@@ -27,20 +27,29 @@
                 "foxundermoon.shell-format",
                 "franneck94.workspace-formatter",
                 "ms-azuretools.vscode-docker",
-                "esbenp.prettier-vscode"
+                "esbenp.prettier-vscode",
+                "ms-vscode.makefile-tools"
             ]
         }
     },
 
     // Use 'forwardPorts' to make a list of ports inside the container available locally.
-    "forwardPorts": [8080],
+    "forwardPorts": [8080, 8089, 8090],
 
     // Use 'portsAttributes' to set default properties for specific forwarded ports.
     // More info: https://containers.dev/implementors/json_reference/#port-attributes
     "portsAttributes": {
         "8080": {
             "label": "Backend API",
-            "onAutoForward": "notify"
+            "onAutoForward": "ignore"
+        },
+        "8089": {
+            "label": "Nats UI",
+            "onAutoForward": "ignore"
+        },
+        "8090": {
+            "label": "RedisInsight",
+            "onAutoForward": "ignore"
         }
     },
 

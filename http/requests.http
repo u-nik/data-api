@@ -1,5 +1,5 @@
 # @name createUser
-POST http://localhost:8080/users
+POST http://localhost:8080/api/users
 Content-Type: application/json
 
 {
@@ -10,5 +10,5 @@ Content-Type: application/json
 
 ###
 
-GET http://localhost:8080/users/{{createUser.response.body.$.id}}
+GET http://localhost:8080/api/users/{{createUser.response.body.$.id}}
 Content-Type: application/json

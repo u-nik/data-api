@@ -1,0 +1,3 @@
+#!/bin/sh
+
+gow run ./cmd/watch/main.go "$@"

@@ -5,7 +5,12 @@ services:
         tty: true
         volumes:
             - ../:/workspace:cached
+            - go-cache:/root/.cache
+            - go-modules:/go/pkg/mod
         working_dir: /workspace
+        environment:
+            REDIS_URL: redis:6379
+            NATS_URL: nats:4222
 
     nats:
         image: nats:2.11-alpine
@@ -14,7 +19,23 @@ services:
             - '8088:8222'
         command: ['-js']
 
+    nats-nui:
+        image: ghcr.io/nats-nui/nui:latest
+        ports:
+            - '8089:31311'
+        volumes:
+            - nats-nui-data:/db
+
     redis:
         image: redis:7-alpine
+
+    redis-insight:
+        image: redis/redisinsight:latest
         ports:
-            - '8089:6379'
+            - '8090:5540'
+        environment:
+            - RI_REDIS_HOST=redis
+volumes:
+    go-cache:
+    go-modules:
+    nats-nui-data:
