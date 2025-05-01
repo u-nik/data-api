@@ -1,7 +1,10 @@
 name: data-api
 services:
     devcontainer:
-        build: ./images/devcontainer
+        build:
+            context: ./images/devcontainer
+            args:
+                GO_VERSION: 1.24
         tty: true
         volumes:
             - ../:/workspace:cached

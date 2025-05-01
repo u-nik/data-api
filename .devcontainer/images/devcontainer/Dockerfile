@@ -1,4 +1,5 @@
-FROM mcr.microsoft.com/devcontainers/go:1-1.24-bookworm
+ARG GO_VERSION
+FROM mcr.microsoft.com/devcontainers/go:1-${GO_VERSION}-bookworm
 ARG GOLANGCI_VERSION=2.1.5
 
 

@@ -28,7 +28,8 @@
                 "franneck94.workspace-formatter",
                 "ms-azuretools.vscode-docker",
                 "esbenp.prettier-vscode",
-                "ms-vscode.makefile-tools"
+                "ms-vscode.makefile-tools",
+                "GitHub.vscode-github-actions"
             ]
         }
     },
