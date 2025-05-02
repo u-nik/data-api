@@ -1,21 +1,40 @@
 package user
 
 import (
-	"data-api/internal/schema"
+	"data-api/internal/middleware"
 	"net/http"
+	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
+	"github.com/nats-io/nats.go"
 )
 
 func (h UserHandler) SetupRoutes(api *gin.RouterGroup) {
 	users := api.Group("/users") // Create a new route group for user-related endpoints.
 	{
-		users.GET("/:id", h.GetUser)  // GET /api/users/:id - Retrieve user data by ID.
-		users.POST("/", h.CreateUser) // POST /api/users - Create a new user.
+		users.GET("/", h.ListUsers) // GET /api/users - Retrieve all users.
+
+		// GET /api/users/:id - Retrieve user data by ID.
+		users.GET("/:id", h.GetUser)
+
+		// POST /api/users - Create a new user.
+		users.POST("/", middleware.JSONSchemaValidator("user"), h.CreateUser)
 	}
+}
+
+func (h UserHandler) ListUsers(c *gin.Context) {
+	// Retrieve all user data from Redis.
+	data, err := h.Rdb.Keys(h.Ctx, "user:*").Result()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Respond with the list of user keys.
+	c.JSON(http.StatusOK, data)
 }
 
 func (h UserHandler) GetUser(c *gin.Context) {
@@ -34,43 +53,48 @@ func (h UserHandler) GetUser(c *gin.Context) {
 }
 
 func (h UserHandler) CreateUser(c *gin.Context) {
-	var input struct {
-		Email string `json:"email"` // Input structure for user email.
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
 	// Generate a unique ID for the user.
 	uuidObj, err := uuid.NewV7()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate UUID"})
 		return
 	}
-	id := uuidObj.String()
 
-	// Create a UserRegistered event.
-	event := UserRegistered{ID: id, Email: input.Email}
-	data, _ := sonic.Marshal(event)
-
-	h.Logger.Debugw("Validating user",
-		"data", data,
-	)
-
-	err = schema.GetManager().ValidateJSON("user", data) // Validate the input against the JSON schema.
+	input, err := h.GetInputFromContext(c)
 	if err != nil {
-		h.Logger.Errorw("Validation error", "error", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	h.Logger.Debugw("Publishing event",
-		"data", string(data),
-	)
+	// Create a empty UserRegistered event.
+	var event = UserCreated{
+		ID:        uuidObj.String(),
+		Name:      input["name"].(string),
+		Email:     input["email"].(string),
+		CreatedAt: time.Now().Format(time.RFC3339),
+	}
+
+	data, err := sonic.Marshal(event)
+	if err != nil {
+		h.Logger.Errorw("Failed to marshal event",
+			"error", err,
+		)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to marshal event"})
+		return
+	}
 
 	// Publish the event to the NATS subject.
-	h.Stream.Publish(h.Subject, data)
+	_, err = h.Stream.Publish(h.Subject, data, nats.AckWait(5*time.Second))
+	if err != nil {
+		h.Logger.Errorw("Failed to publish event",
+			"error", err,
+		)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to publish event", "details": err.Error()})
+		return
+	}
+
+	h.Logger.Debugw("Published event",
+		"id", uuidObj.String(),
+	)
 
 	// Respond with the created event.
 	c.JSON(http.StatusAccepted, event)

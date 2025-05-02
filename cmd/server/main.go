@@ -4,7 +4,9 @@ import (
 	"context"
 	"data-api/internal/handlers"
 	_ "data-api/internal/handlers/user"
-	_ "data-api/internal/schema"
+	"data-api/internal/middleware"
+	"data-api/internal/schema"
+	"data-api/internal/stream"
 	"log"
 	"os"
 
@@ -14,19 +16,17 @@ import (
 )
 
 var (
-	ctx    = context.Background() // Global context for Redis operations.
-	rdb    *redis.Client          // Redis client instance.
-	logger *zap.Logger            // Global logger instance for logging.
+	ctx = context.Background() // Global context for Redis operations.
+	rdb *redis.Client          // Redis client instance.
 )
 
-func init() {
-	logger = setupLogger() // Initialize the logger.
-}
-
 func main() {
-	defer logger.Sync() // Flushes buffer, if any.
+	baseLogger := setupLogger() // Initialize the logger.
+	defer baseLogger.Sync()     // Ensure all buffered log entries are flushed before the program exits.
 
 	r := gin.Default() // Initialize the Gin router.
+	r.Use(gin.Recovery())
+	r.Use(middleware.RequestLogger(baseLogger)) // Use the request logger middleware.
 
 	// Redis Initialization
 	// Get Redis DSN from environment variable, with fallback to default
@@ -35,15 +35,20 @@ func main() {
 	})
 	defer rdb.Close() // Close the Redis client when the function exits.
 
-	stream := SetupStream(getEnv("NATS_URL", "localhost:4222"))    // Set up the event streams.
-	handlerMap := handlers.SetupHandlers(logger, ctx, rdb, stream) // Set up the handlers for the application.
-	RegisterSubscribers(stream, ctx, rdb, handlerMap)              // Set up the subscribers for the event streams.
-	SetupRoutes(r, handlerMap)                                     // Set up the routes for the Gin router.
+	// Initialize the schema manager.
+	schema.Initialize(baseLogger)
+
+	// Initialize the event streams.
+	stream.Initialize(getEnv("NATS_URL", "localhost:4222"))
+
+	handlerMap := handlers.SetupHandlers(baseLogger, ctx, rdb, *stream.Context) // Set up the handlers for the application.
+	stream.RegisterSubscribers(ctx, rdb, handlerMap)                            // Set up the subscribers for the event streams.
+	SetupRoutes(r, handlerMap)                                                  // Set up the routes for the Gin router.
 
 	// Start the Gin server on port 8080.
 	err := r.Run(getEnv("SERVER_URL", ":8080"))
 	if err != nil {
-		logger.Fatal("Failed to start server", zap.Error(err))
+		baseLogger.Fatal("Failed to start server", zap.Error(err))
 	}
 }
 
@@ -56,4 +61,19 @@ func getEnv(key, fallback string) string {
 	}
 
 	return fallback
+}
+
+// setupLogger creates and configures a Zap logger with development settings.
+// It returns a sugared logger which provides a more ergonomic API.
+// The function will terminate the program with a fatal error if logger initialization fails.
+// Note: The logger's Sync method is deferred within this function, which may flush
+// any buffered log entries before the logger is returned.
+func setupLogger() *zap.Logger {
+	// Initialize the logger with development configuration.
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		log.Fatalf("Failed to initialize logger: %v", err)
+	}
+
+	return logger
 }

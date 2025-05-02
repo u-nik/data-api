@@ -1,17 +1,21 @@
 package schema
 
-import "log"
+import (
+	"go.uber.org/zap"
+)
 
 var (
 	manager *Manager // Global schema manager instance.
 )
 
-func init() {
-	log.Println("Initializing schema manager...")
+func Initialize(logger *zap.Logger) {
+	logger.Sugar().Infoln("Initializing schema manager...")
+
 	// Initialize the schema manager.
-	manager = NewManager() // Initialize the schema manager.
+	manager = NewManager(logger)
 }
 
-func GetManager() *Manager {
-	return manager // Return the global schema manager instance.
+// Validate checks if the provided data is valid according to the schema for the given dataType
+func Validate(dataType string, data any) (interface{}, error) {
+	return manager.ValidateJSON(dataType, data)
 }

@@ -1,7 +1,7 @@
 # Go-Variablen
 GO := go
 GOW := gow
-APP_NAME := data-api
+APP_NAME := server
 CMD_DIR := ./cmd/server
 BUILD_DIR := ./bin
 

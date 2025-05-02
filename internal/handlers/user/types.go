@@ -7,8 +7,10 @@ type UserHandler struct {
 	Subject              string
 }
 
-// UserRegistered represents the event structure for a registered user.
-type UserRegistered struct {
-	ID    string `json:"id" jsonschema:"uuid"`     // Unique identifier for the user.
-	Email string `json:"email" jsonschema:"email"` // Email address of the user.
+// UserCreated represents the event structure for a registered user.
+type UserCreated struct {
+	ID        string `json:"id"`         // Unique identifier for the user.
+	Name      string `json:"name"`       // Name of the user.
+	Email     string `json:"email"`      // Email address of the user.
+	CreatedAt string `json:"created_at"` // Timestamp of when the user was created.
 }

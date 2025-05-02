@@ -2,23 +2,31 @@ package schema
 
 import (
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/bytedance/sonic"
 	"github.com/kaptinlin/jsonschema"
+	"go.uber.org/zap"
 )
 
 // NewManager initializes and returns a new instance of Manager.
 // It loads the JSON schemas during initialization.
-func NewManager() *Manager {
-	m := &Manager{
-		schemas: loadJsonSchemas(),
+func NewManager(logger *zap.Logger) *Manager {
+	loader := &schemaLoader{
+		logger: logger,
 	}
 
-	return m
+	return &Manager{
+		logger:  logger,
+		schemas: loader.loadJsonSchemas(),
+	}
+}
+
+// Small helper type to load JSON schemas
+type schemaLoader struct {
+	logger *zap.Logger
 }
 
 // loadJsonSchemas loads JSON schema files from the "./schema/*.json" directory pattern.
@@ -31,11 +39,11 @@ func NewManager() *Manager {
 //
 // Returns:
 //   - map[string]*jsonschema.Schema: A map of compiled JSON schemas indexed by filename.
-func loadJsonSchemas() map[string]*jsonschema.Schema {
-	log.Println("Loading JSON schemas...")
+func (l *schemaLoader) loadJsonSchemas() map[string]*jsonschema.Schema {
+	l.logger.Sugar().Infoln("Loading JSON schemas...")
 
 	// Load JSON schema from a file or define it as a string.
-	return loadJsonSchemasFromGlobPattern("./schemas/*.json")
+	return l.loadJsonSchemasFromGlobPattern("./schemas/*.json")
 }
 
 // loadJsonSchemasFromGlobPattern loads and compiles JSON schemas from files matching the given glob pattern.
@@ -49,12 +57,12 @@ func loadJsonSchemas() map[string]*jsonschema.Schema {
 //
 // The function will log fatal errors if it encounters issues with finding files,
 // reading schema content, or compiling the schemas.
-func loadJsonSchemasFromGlobPattern(pattern string) map[string]*jsonschema.Schema {
-	log.Println("Compiling JSON schemas from glob pattern: ", pattern)
+func (l *schemaLoader) loadJsonSchemasFromGlobPattern(pattern string) map[string]*jsonschema.Schema {
+	l.logger.Sugar().Infoln("Compiling JSON schemas from glob pattern: ", pattern)
 
 	files, err := filepath.Glob(pattern)
 	if err != nil {
-		log.Fatalf("Error finding schema files: %v", err)
+		l.logger.Sugar().Fatalf("Error finding schema files: %v", err)
 	}
 
 	// JSON schema compiler initialization
@@ -73,18 +81,18 @@ func loadJsonSchemasFromGlobPattern(pattern string) map[string]*jsonschema.Schem
 
 		schemaData, err := io.ReadAll(schemaFile)
 		if err != nil {
-			log.Fatalf("Error reading schema file: %v", err)
+			l.logger.Sugar().Fatalf("Error reading schema file: %v", err)
 		}
 
 		schema, err := compiler.Compile([]byte(schemaData))
 		if err != nil {
-			log.Fatalf("Error compiling schema: %v", err)
+			l.logger.Sugar().Fatalf("Error compiling schema: %v", err)
 		}
 
 		filename := strings.TrimSuffix(filepath.Base(file), ".json")
 		schemas[filename] = schema
 
-		GetLogger.Infof("Loaded schema: %s", filename)
+		l.logger.Sugar().Infof("Loaded schema: %s", filename)
 	}
 
 	return schemas

@@ -4,11 +4,14 @@ Content-Type: application/json
 
 {
   "name": "John Doe",
-  "email": "john.doe@localhost.test",
-  "foo": "bar"
+  "email": "john.doe@localhost.test"
 }
 
 ###
 
 GET http://localhost:8080/api/users/{{createUser.response.body.$.id}}
 Content-Type: application/json
+
+###
+
+GET http://localhost:8080/api/users

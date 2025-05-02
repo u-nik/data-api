@@ -24,5 +24,6 @@
     ],
     "[ignore]": {
         "editor.defaultFormatter": "foxundermoon.shell-format"
-    }
+    },
+    "shellformat.path": "/go/bin/shfmt",
 }

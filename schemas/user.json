@@ -22,5 +22,6 @@
             "readOnly": true
         }
     },
-    "required": ["name", "email"]
+    "required": ["name", "email"],
+    "additionalProperties": false
 }
