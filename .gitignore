@@ -1,2 +1,5 @@
 main
 bin
+
+localhost-key.pem
+localhost.pem

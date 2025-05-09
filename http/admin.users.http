@@ -1,0 +1,35 @@
+# @name accessToken
+# @description Get an access token using the client credentials grant
+# It is important to set the audience to the client ID in order to get a valid access token
+POST {{oidcIssuer}}/oauth2/token
+Authorization: Basic {{clientId}}:{{clientSecret}}
+Content-Type: application/x-www-form-urlencoded
+Accept: application/json
+
+grant_type=client_credentials&scope={{scope}}&audience={{clientId}}
+
+###
+
+# @name createUser
+POST {{dataApiUrl}}/api/admin/users
+Authorization: Bearer {{accessToken.response.body.access_token}}
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john.doe@localhost.test"
+}
+
+###
+
+GET {{dataApiUrl}}/api/admin/users/{{createUser.response.body.$.id}}
+Authorization: Bearer {{accessToken.response.body.access_token}}
+Content-Type: application/json
+
+###
+
+# @name listUsers
+GET {{dataApiUrl}}/api/admin/users
+Authorization: Bearer {{accessToken.response.body.access_token}}
+Content-Type: application/json
+Accept: application/json

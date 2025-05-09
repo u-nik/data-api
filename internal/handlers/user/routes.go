@@ -13,15 +13,17 @@ import (
 )
 
 func (h UserHandler) SetupRoutes(api *gin.RouterGroup) {
-	users := api.Group("/users") // Create a new route group for user-related endpoints.
+	users := api.Group("/admin/users")
+	users.Use(middleware.RequireScope("admin.users.read")) // Create a new route group for user-related endpoints.
 	{
-		users.GET("/", h.ListUsers) // GET /api/users - Retrieve all users.
+		// Retrieve all users.
+		users.GET("/", h.ListUsers)
 
-		// GET /api/users/:id - Retrieve user data by ID.
+		// Retrieve user data by ID.
 		users.GET("/:id", h.GetUser)
 
-		// POST /api/users - Create a new user.
-		users.POST("/", middleware.JSONSchemaValidator("user"), h.CreateUser)
+		// Create a new user.
+		users.POST("/", middleware.RequireScope("admin.users.create"), middleware.JSONSchemaValidator("user"), h.CreateUser)
 	}
 }
 

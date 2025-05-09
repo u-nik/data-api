@@ -11,9 +11,8 @@ services:
             - go-cache:/root/.cache
             - go-modules:/go/pkg/mod
         working_dir: /workspace
-        environment:
-            REDIS_URL: redis:6379
-            NATS_URL: nats:4222
+        env_file:
+            - ./env/devcontainer.env
 
     nats:
         image: nats:2.11-alpine
@@ -40,8 +39,47 @@ services:
             - '8090:5540'
         environment:
             - RI_REDIS_HOST=redis
+
+    database:
+        image: postgres:17-alpine
+        ports:
+            - '5432:5432'
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: password
+            POSTGRES_DB: data_api
+        volumes:
+            - pg-data:/var/lib/postgresql/data
+            - ./images/postgresql/init:/docker-entrypoint-initdb.d
+
+    hydra-migrate:
+        image: oryd/hydra:latest
+        depends_on:
+            - database
+        env_file:
+            - ./env/hydra.env
+        command: migrate sql -e --yes
+        extra_hosts:
+            - host.docker.internal:host-gateway
+
+    hydra:
+        image: oryd/hydra:latest
+        depends_on:
+            - hydra-migrate
+        ports:
+            - '4444:4444'
+            - '4445:4445'
+        env_file:
+            - ./env/hydra.env
+        command: serve all --dev
+        networks:
+            default:
+                aliases:
+                    - hydra.localhost
+
 volumes:
     go-cache:
     go-modules:
     nats-nui-data:
     nats-data:
+    pg-data:

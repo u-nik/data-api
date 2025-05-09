@@ -1,5 +1,5 @@
 {
-     "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "[go]": {
         "editor.insertSpaces": true,
         "editor.formatOnSave": true,
@@ -19,11 +19,22 @@
         "cSpell.advanced.feature.useReferenceProviderWithRename": true,
         "cSpell.advanced.feature.useReferenceProviderRemove": "/^#+\\s/"
     },
-    "cSpell.words": [
-        "jsonschema"
-    ],
+    "cSpell.words": ["jsonschema"],
     "[ignore]": {
         "editor.defaultFormatter": "foxundermoon.shell-format"
     },
     "shellformat.path": "/go/bin/shfmt",
+    "rest-client.environmentVariables": {
+        "$shared": {
+            "allScopes": "admin.users.read admin.users.create admin.users.update admin.users.delete",
+            "scope": "admin.users.read",
+        },
+        "dev": {
+            "dataApiUrl": "http://localhost:8080",
+            "oidcIssuer": "http://hydra.localhost:4444",
+            "hydraAdminUrl": "http://hydra.localhost:4445/admin",
+            "clientId": "data-api-client",
+            "clientSecret": "superSecret",
+        },
+    }
 }

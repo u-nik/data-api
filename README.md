@@ -4,6 +4,10 @@ It follows a similar approch like Contentful or Storyblok but in an enhanced way
 
 The Data API is planed as a client-server application.
 
+## Get started
+
+Open the project in the devcontainer and run `make watch` or `make run` to start the application.
+
 ## Server
 
 The server component of the Data API is designed for high performance and scalability, leveraging Go for its concurrency and efficiency. The key features and functionalities are grouped as follows:
@@ -60,3 +64,7 @@ The UI makes the context what type of data you want to manage. The Data API shou
 - Developed with Nuxt/Vue as an SPA. For Admin UIs a good solution because of the complexity of the functionality.
 - Responsive Design: Optimized for mobile and tablets too.
 - Extendable: Support for modules or plugins for specific requirements.
+
+## Further ideas
+
+- Watching schema files and reload schema manager: [fsnotify](https://github.com/fsnotify/fsnotify)

@@ -35,13 +35,21 @@
     },
 
     // Use 'forwardPorts' to make a list of ports inside the container available locally.
-    "forwardPorts": [8080, 8089, 8090],
+    "forwardPorts": [8080, 8089, 8090, 4444, 4445],
 
     // Use 'portsAttributes' to set default properties for specific forwarded ports.
     // More info: https://containers.dev/implementors/json_reference/#port-attributes
     "portsAttributes": {
         "8080": {
             "label": "Backend API",
+            "onAutoForward": "ignore"
+        },
+        "4444": {
+            "label": "Hydra Auth API",
+            "onAutoForward": "ignore"
+        },
+        "4445": {
+            "label": "Hydra Admin API",
             "onAutoForward": "ignore"
         },
         "8089": {
@@ -54,6 +62,7 @@
         }
     },
 
+    "initializeCommand": "sh .devcontainer/commands/initialize.sh",
     // Use 'postCreateCommand' to run commands after the container is created.
     "postCreateCommand": "go version && go mod tidy",
 

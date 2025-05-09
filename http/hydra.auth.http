@@ -1,0 +1,27 @@
+# Create a new OAuth 2.0 client in Hydra
+# @name createClient
+POST {{hydraAdminUrl}}/clients
+Content-Type: application/json
+Accept: application/json
+
+{
+    "client_id": "{{clientId}}",
+    "client_secret": "{{clientSecret}}",
+    "grant_types": ["client_credentials"],
+    "response_types": ["token"],
+    "scope": "{{allScopes}}",
+    "audience": ["{{clientId}}"]
+}
+
+###
+
+# @name getClient
+GET {{hydraAdminUrl}}/clients/{{clientId}}
+Content-Type: application/json
+Accept: application/json
+
+###
+
+# @name deleteClient
+DELETE {{hydraAdminUrl}}/clients/{{clientId}}
+Accept: application/json
