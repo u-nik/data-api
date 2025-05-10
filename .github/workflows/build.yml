@@ -57,6 +57,10 @@ jobs:
             - name: Install go-junit-report
               run: go install github.com/jstemmer/go-junit-report@latest
 
+            # Install swaggo
+            - name: Install swaggo
+              run: go install github.com/swaggo/swag/cmd/swag@latest
+
             # Build the application
             - name: Build server
               run: make build
