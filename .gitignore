@@ -4,3 +4,4 @@ vendor
 
 localhost-key.pem
 localhost.pem
+test-results.xml
