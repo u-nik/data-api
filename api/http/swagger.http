@@ -1,0 +1,2 @@
+GET {{dataApiUrl}}/swagger/index.html
+Accept: text/html

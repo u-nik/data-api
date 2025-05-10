@@ -1,0 +1,133 @@
+basePath: /api
+definitions:
+  user.UserCreatedEvent:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      user_data:
+        $ref: '#/definitions/user.UserInput'
+    type: object
+  user.UserInput:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+    required:
+    - email
+    - name
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Dies ist eine Data-API mit Gin und Swagger
+  title: Data API
+  version: "1.0"
+paths:
+  /admin/users:
+    get:
+      description: List all users from Redis database
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+        "403":
+          description: forbidden
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: List all users
+      tags:
+      - admin
+      - users
+    post:
+      description: Create a new user and publish an event to NATS
+      parameters:
+      - description: User data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/user.UserInput'
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/user.UserCreatedEvent'
+        "400":
+          description: bad request
+          schema:
+            type: string
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+        "403":
+          description: forbidden
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new user
+      tags:
+      - admin
+      - users
+  /admin/users/{id}:
+    get:
+      description: Get user data by ID from Redis database
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+        "401":
+          description: unauthorized
+          schema:
+            type: string
+        "403":
+          description: forbidden
+          schema:
+            type: string
+        "404":
+          description: not found
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get user by ID
+      tags:
+      - admin
+      - users
+securityDefinitions:
+  BearerAuth:
+    description: 'Trage deinen Bearer Token ein: "Bearer &lt;token&gt;"'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

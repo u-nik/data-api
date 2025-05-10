@@ -10,6 +10,8 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/kaptinlin/jsonschema v0.2.3
 	github.com/nats-io/nats.go v1.42.0
+	github.com/swaggo/files v1.0.1
+	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.4
 	go.uber.org/zap v1.27.0
 )

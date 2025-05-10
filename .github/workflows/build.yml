@@ -50,21 +50,40 @@ jobs:
                   restore-keys: |
                       ${{ runner.os }}-go-${{ matrix.goarch }}-
 
-            # Install dependencies
-            - name: Install dependencies
-              run: go mod tidy
-
-            # Run tests
-            - name: Run tests
-              run: GOARCH=${{ matrix.goarch }} go test ./... -v
+            # Install go-junit-report
+            - name: Install go-junit-report
+              run: go install github.com/jstemmer/go-junit-report@latest
 
             # Build the application
             - name: Build server
-              run: GOARCH=${{ matrix.goarch }} go build -o bin/server-${{ matrix.goarch }} ./cmd/server
+              run: make build
+              env:
+                  GOARCH: ${{ matrix.goarch }}
 
-            # Upload build artifact
+            # Upload test results to GitHub Actions summary
+            - name: Publish Test Report
+              uses: mikepenz/action-junit-report@v5
+              if: success() || failure()
+              with:
+                  report_paths: 'test-results.xml'
+
+            # Upload test results
             - name: Upload build artifact
               uses: actions/upload-artifact@v4
               with:
                   name: server-${{ matrix.goarch }}
                   path: bin/server-${{ matrix.goarch }}
+
+            # Archive vendor directory
+            - name: Archive vendor directory
+              run: |
+                  mkdir -p vendor
+                  cp -r vendor/* vendor/
+                  tar -czf vendor-${{ matrix.goarch }}.tar.gz vendor
+
+            # Upload test results
+            - name: Upload vendor directory
+              uses: actions/upload-artifact@v4
+              with:
+                  name: vendor-${{ matrix.goarch }}
+                  path: vendor-${{ matrix.goarch }}.tar.gz

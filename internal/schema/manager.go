@@ -77,7 +77,7 @@ func (l *schemaLoader) loadJsonSchemasFromGlobPattern(pattern string) map[string
 		if err != nil {
 			panic(err)
 		}
-		defer schemaFile.Close()
+		defer func() { _ = schemaFile.Close() }() // Ensure the file is closed after reading
 
 		schemaData, err := io.ReadAll(schemaFile)
 		if err != nil {
