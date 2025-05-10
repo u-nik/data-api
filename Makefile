@@ -15,7 +15,7 @@ all: build
 # Build des Projekts
 build: generate
 	@echo "Building $(APP_NAME) ($(GOARCH))..."
-	$(GO) build -o $(BUILD_DIR)/$(APP_NAME) $(CMD_DIR)/
+	$(GO) build -o $(BUILD_DIR)/$(APP_NAME)-$(GOARCH) $(CMD_DIR)/
 
 # Projekt ausführen
 run:
