@@ -54,14 +54,10 @@ jobs:
             # Install go-junit-report
             - name: Install go-junit-report
               run: go install github.com/jstemmer/go-junit-report@latest
-              env:
-                  GOARCH: ${{ matrix.goarch }}
 
             # Install swaggo
             - name: Install swaggo
               run: go install github.com/swaggo/swag/cmd/swag@latest
-              env:
-                  GOARCH: ${{ matrix.goarch }}
 
             # Run tests
             - name: Run tests
