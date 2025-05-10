@@ -20,6 +20,7 @@ var (
 type TokenClaims struct {
 	Subject   string   `json:"sub"`
 	ClientID  string   `json:"client_id"`
+	TanentID  string   `json:"tenant_id"`
 	Scope     string   `json:"scope"`
 	Scp       []string `json:"scp"`
 	Roles     []string `json:"roles,omitempty"` // optional
