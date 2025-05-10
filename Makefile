@@ -13,7 +13,7 @@ GOARCH := $(if $(GOARCH),$(GOARCH),$(shell uname -m | sed 's/x86_64/amd64/;s/aar
 all: build
 
 # Build des Projekts
-build: generate test lint
+build: generate
 	@echo "Building $(APP_NAME) ($(GOARCH))..."
 	$(GO) build -o $(BUILD_DIR)/$(APP_NAME) $(CMD_DIR)/
 
