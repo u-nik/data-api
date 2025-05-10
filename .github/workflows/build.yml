@@ -90,8 +90,6 @@ jobs:
             # Archive vendor directory
             - name: Archive vendor directory
               run: |
-                  mkdir -p vendor
-                  cp -r vendor/* vendor/
                   tar -czf vendor-${{ matrix.goarch }}.tar.gz vendor
 
             # Upload test results
