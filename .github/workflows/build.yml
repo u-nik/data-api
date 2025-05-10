@@ -8,7 +8,6 @@ on:
             - 'docs/**'
             - '.devcontainer/**'
             - '.vscode/**'
-            - '.github/**'
             - 'schemas/**'
             - '**.md'
             - 'LICENSE'
