@@ -55,7 +55,12 @@ func main() {
 
 	handlerMap := handlers.SetupHandlers(baseLogger, ctx, rdb, *stream.Context) // Set up the handlers for the application.
 	stream.RegisterSubscribers(ctx, rdb, handlerMap)                            // Set up the subscribers for the event streams.
-	SetupRoutes(r, handlerMap, baseLogger)                                      // Set up the routes for the Gin router.
+
+	apiMiddlewares := []func(*zap.Logger) gin.HandlerFunc{
+		middleware.Auth, // Add request logger middleware to the API routes.
+	}
+
+	SetupRoutes(r, handlerMap, apiMiddlewares, baseLogger) // Set up the routes for the Gin router.
 
 	// Start the Gin server on port 8080.
 	err := r.Run(utils.GetEnv("SERVER_URL", ":8080"))
