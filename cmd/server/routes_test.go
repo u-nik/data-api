@@ -26,7 +26,7 @@ func (m *mockHandler) GetSubject() string {
 	return "mock-subject"
 }
 
-var middlewares = []func(*zap.Logger) gin.HandlerFunc{}
+var middlewares = []func() gin.HandlerFunc{}
 
 func TestSetupRoutes(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -75,7 +75,7 @@ func TestSetupRoutes(t *testing.T) {
 	t.Run("should apply middleware to API routes", func(t *testing.T) {
 		r := gin.Default()
 		middlewareCalled := false
-		middlewares = append(middlewares, func(logger *zap.Logger) gin.HandlerFunc {
+		middlewares = append(middlewares, func() gin.HandlerFunc {
 			return func(c *gin.Context) {
 				middlewareCalled = true
 				c.Next()

@@ -1,7 +1,6 @@
-package middleware
+package schema
 
 import (
-	"data-api/internal/schema"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +15,7 @@ func JSONSchemaValidator(schemaName string) gin.HandlerFunc {
 			return
 		}
 
-		validationResult, err := schema.Validate(schemaName, input)
+		validationResult, err := Validate(schemaName, input)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error":   "Validation failed",

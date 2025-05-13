@@ -2,7 +2,8 @@ package user
 
 import (
 	_ "data-api/api"
-	"data-api/internal/middleware"
+	"data-api/internal/auth"
+	"data-api/internal/schema"
 	"net/http"
 	"time"
 
@@ -15,7 +16,7 @@ import (
 
 func (h UserHandler) SetupRoutes(api *gin.RouterGroup) {
 	users := api.Group("/admin/users")
-	users.Use(middleware.RequireScope("admin.users.read")) // Create a new route group for user-related endpoints.
+	users.Use(auth.RequireScope("admin.users.read")) // Create a new route group for user-related endpoints.
 	{
 		// Retrieve all users.
 		users.GET("/", h.ListUsers)
@@ -24,7 +25,7 @@ func (h UserHandler) SetupRoutes(api *gin.RouterGroup) {
 		users.GET("/:id", h.GetUser)
 
 		// Create a new user.
-		users.POST("/", middleware.RequireScope("admin.users.create"), middleware.JSONSchemaValidator("user"), h.CreateUser)
+		users.POST("/", auth.RequireScope("admin.users.create"), schema.JSONSchemaValidator("user"), h.CreateUser)
 	}
 }
 

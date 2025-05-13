@@ -2,11 +2,9 @@ package user
 
 import (
 	"data-api/internal/handlers"
-	"log"
 )
 
 func init() {
-	log.Println("Initializing user handler...")
 	// Register the UserHandler with the factory.
 	handlers.RegisterHandler("user", func(baseHandler handlers.BaseHandler) handlers.HandlerInterface {
 		return NewHandler(baseHandler)

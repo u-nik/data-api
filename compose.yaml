@@ -8,6 +8,8 @@ services:
             - '9080:8080'
         env_file:
             - ./docker/env/api.env
+        environment:
+            GIN_MODE: release
         depends_on:
             - hydra
             - redis

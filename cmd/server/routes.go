@@ -12,7 +12,7 @@ import (
 func SetupRoutes(
 	r *gin.Engine,
 	handlers map[string]handlers.HandlerInterface,
-	apiMiddlewares []func(*zap.Logger) gin.HandlerFunc,
+	apiMiddlewares []func() gin.HandlerFunc,
 	baseLogger *zap.Logger,
 ) {
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -20,7 +20,7 @@ func SetupRoutes(
 	api := r.Group("/api") // Create a new route group for API endpoints.
 
 	for _, middleware := range apiMiddlewares {
-		api.Use(middleware(baseLogger))
+		api.Use(middleware())
 	}
 
 	for _, handler := range handlers {

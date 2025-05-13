@@ -1,5 +1,7 @@
 package handlers
 
+import "go.uber.org/zap"
+
 var factories = make(map[string]HandlerFactory)
 
 func RegisterHandler(name string, factory HandlerFactory) {
@@ -12,6 +14,7 @@ func RegisterHandler(name string, factory HandlerFactory) {
 func CreateHandlers(baseHandler BaseHandler) map[string]HandlerInterface {
 	handlerMap := make(map[string]HandlerInterface)
 	for name, factory := range factories {
+		zap.L().Sugar().Infof("Registering handler: %s", name)
 		handler := factory(baseHandler)
 		handlerMap[name] = handler
 	}
