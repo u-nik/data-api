@@ -2,8 +2,12 @@ package utils
 
 import "os"
 
-// Helper function to get environment variable with fallback
-func GetEnv(key, defaultValue string) string {
+// Alias for GetEnvOrDefault function
+func GetEnv(key string, defaultValue string) string {
+	return GetEnvOrDefault(key, defaultValue)
+}
+
+func GetEnvOrDefault(key string, defaultValue string) string {
 	value := os.Getenv(key)
 
 	if value != "" {
@@ -21,4 +25,8 @@ func GetRequiredEnv(key string) string {
 	}
 
 	return value
+}
+
+func Ptr[T any](v T) *T {
+	return &v
 }

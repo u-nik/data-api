@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	verifier *oidc.IDTokenVerifier
-	clientID = utils.GetRequiredEnv("OIDC_CLIENT_ID")
+	verifier   *oidc.IDTokenVerifier
+	clientID   = utils.GetEnv("OIDC_CLIENT_ID", "data-api")
+	oidcIssuer = utils.GetEnv("OIDC_ISSUER", "") // OIDC issuer URL
 )
 
 type TokenClaims struct {
@@ -29,21 +30,30 @@ type TokenClaims struct {
 }
 
 func init() {
-	log.Printf("Initializing OIDC provider with issuer: %s", utils.GetRequiredEnv("OIDC_ISSUER"))
-	// Initialize the OIDC provider
-	provider, err := oidc.NewProvider(context.Background(), utils.GetRequiredEnv("OIDC_ISSUER"))
-	if err != nil {
-		log.Fatalf("Failed to create OIDC provider: %v", err)
-	}
+	if oidcIssuer != "" {
+		log.Printf("Initializing OIDC provider with issuer: %s", oidcIssuer)
+		// Initialize the OIDC provider
+		provider, err := oidc.NewProvider(context.Background(), oidcIssuer)
+		if err != nil {
+			log.Fatalf("Failed to create OIDC provider: %v", err)
+		}
 
-	// Create an ID token verifier
-	verifier = provider.Verifier(&oidc.Config{
-		ClientID: clientID,
-	})
+		// Create an ID token verifier
+		verifier = provider.Verifier(&oidc.Config{
+			ClientID: clientID,
+		})
+	} else {
+		log.Println("OIDC issuer not set, skipping OIDC initialization")
+	}
 }
 
 func Auth(baseLogger *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if oidcIssuer == "" {
+			c.Next()
+			return
+		}
+
 		baseLogger.Sugar().Infof("Authorize Request: %s %s", c.Request.Method, c.Request.URL.Path)
 
 		authHeader := c.GetHeader("Authorization")
@@ -72,6 +82,11 @@ func Auth(baseLogger *zap.Logger) gin.HandlerFunc {
 
 func RequireScope(required string) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if oidcIssuer == "" {
+			c.Next()
+			return
+		}
+
 		claims, exists := GetTokenClaims(c)
 		if !exists {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "no claims"})
@@ -113,6 +128,11 @@ func GetScopes(claims TokenClaims) []string {
 
 func RequireRole(role string) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if oidcIssuer == "" {
+			c.Next()
+			return
+		}
+
 		claims, ok := GetTokenClaims(c)
 		if !ok {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "missing claims"})

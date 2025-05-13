@@ -61,6 +61,7 @@ jobs:
 
             # Run tests
             - name: Run tests
+              if: matrix.goarch == 'amd64'
               run: |
                   make test
               env:
@@ -75,7 +76,7 @@ jobs:
             # Upload test results to GitHub Actions summary
             - name: Publish Test Report
               uses: mikepenz/action-junit-report@v5
-              if: success() || failure()
+              if: (success() || failure()) && matrix.goarch == 'amd64'
               with:
                   report_paths: 'test-results.xml'
                   comment: true

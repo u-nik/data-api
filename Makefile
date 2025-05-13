@@ -15,7 +15,7 @@ all: build
 # Build des Projekts
 build: generate
 	@echo "Building $(APP_NAME) ($(GOARCH))..."
-	$(GO) build -o $(BUILD_DIR)/$(APP_NAME)-$(GOARCH) $(CMD_DIR)/
+	CGO_ENABLED=0 $(GO) build -o $(BUILD_DIR)/$(APP_NAME) -ldflags="-s -w" $(CMD_DIR)/
 
 # Projekt ausführen
 run:

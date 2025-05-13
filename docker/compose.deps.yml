@@ -1,19 +1,4 @@
-name: data-api
 services:
-    devcontainer:
-        build:
-            context: ./images/devcontainer
-            args:
-                GO_VERSION: 1.24
-        tty: true
-        volumes:
-            - ../:/workspace:cached
-            - go-cache:/root/.cache
-            - go-modules:/go/pkg/mod
-        working_dir: /workspace
-        env_file:
-            - ./env/devcontainer.env
-
     nats:
         image: nats:2.11-alpine
         ports:
@@ -23,22 +8,8 @@ services:
             - nats-data:/data
         command: ['-js', '--store_dir', '/data']
 
-    nats-nui:
-        image: ghcr.io/nats-nui/nui:latest
-        ports:
-            - '8089:31311'
-        volumes:
-            - nats-nui-data:/db
-
     redis:
         image: redis:7-alpine
-
-    redis-insight:
-        image: redis/redisinsight:latest
-        ports:
-            - '8090:5540'
-        environment:
-            - RI_REDIS_HOST=redis
 
     database:
         image: postgres:17-alpine
@@ -78,8 +49,5 @@ services:
                     - hydra.localhost
 
 volumes:
-    go-cache:
-    go-modules:
-    nats-nui-data:
     nats-data:
     pg-data:

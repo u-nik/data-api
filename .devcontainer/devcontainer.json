@@ -4,12 +4,14 @@
     "name": "Data-API",
     // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
     // "image": "mcr.microsoft.com/devcontainers/go:1-1.22-bookworm",
-    "dockerComposeFile": "compose.yml",
+    "dockerComposeFile": "../docker/compose.dev.yml",
     "workspaceFolder": "/workspace",
     "service": "devcontainer",
 
     // Features to add to the dev container. More info: https://containers.dev/features.
-    // "features": {},
+    "features": {
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+    },
 
     // Configure tool-specific properties.
     "customizations": {
@@ -17,19 +19,19 @@
         "vscode": {
             "settings": {},
             "extensions": [
-                "streetsidesoftware.code-spell-checker",
-                "humao.rest-client",
-                "golang.go",
-                "redhat.vscode-yaml",
-                "DavidAnson.vscode-markdownlint",
-                "yzhang.markdown-all-in-one",
                 "bierner.github-markdown-preview",
+                "DavidAnson.vscode-markdownlint",
+                "esbenp.prettier-vscode",
                 "foxundermoon.shell-format",
                 "franneck94.workspace-formatter",
-                "ms-azuretools.vscode-docker",
-                "esbenp.prettier-vscode",
+                "GitHub.vscode-github-actions",
+                "golang.go",
+                "humao.rest-client",
+                "ms-azuretools.vscode-containers",
                 "ms-vscode.makefile-tools",
-                "GitHub.vscode-github-actions"
+                "redhat.vscode-yaml",
+                "streetsidesoftware.code-spell-checker",
+                "yzhang.markdown-all-in-one"
             ]
         }
     },

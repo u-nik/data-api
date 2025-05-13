@@ -1,0 +1,15 @@
+name: data-api-dist
+include:
+    - ./docker/compose.deps.yml
+services:
+    api:
+        build: .
+        ports:
+            - '9080:8080'
+        env_file:
+            - ./docker/env/api.env
+        depends_on:
+            - hydra
+            - redis
+            - database
+            - nats
