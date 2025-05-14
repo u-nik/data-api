@@ -20,3 +20,11 @@ func CreateHandlers(baseHandler BaseHandler) map[string]HandlerInterface {
 	}
 	return handlerMap
 }
+
+func GetAllSubjects(handlerMap map[string]HandlerInterface) []string {
+	subjects := make([]string, 0, len(handlerMap))
+	for _, handler := range handlerMap {
+		subjects = append(subjects, handler.GetSubject())
+	}
+	return subjects
+}

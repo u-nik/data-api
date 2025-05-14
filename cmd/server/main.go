@@ -8,6 +8,7 @@ import (
 	"data-api/internal/auth"
 	"data-api/internal/handlers"
 	_ "data-api/internal/handlers/user"
+	_ "data-api/internal/handlers/webauthn"
 	"data-api/internal/logger"
 	"data-api/internal/schema"
 	"data-api/internal/stream"
@@ -56,11 +57,11 @@ func main() {
 	// Initialize the schema manager.
 	schema.Initialize(zap.L())
 
-	// Initialize the event streams.
-	stream.Initialize(utils.GetEnv("NATS_URL", "localhost:4222"))
+	handlerMap := handlers.SetupHandlers(zap.L(), ctx, rdb) // Set up the handlers for the application.
 
-	handlerMap := handlers.SetupHandlers(zap.L(), ctx, rdb, *stream.Context) // Set up the handlers for the application.
-	stream.RegisterSubscribers(ctx, rdb, handlerMap)                         // Set up the subscribers for the event streams.
+	// Initialize the event streams.
+	stream.Initialize(utils.GetEnv("NATS_URL", "localhost:4222"), handlerMap)
+	stream.RegisterSubscribers(ctx, rdb, handlerMap) // Set up the subscribers for the event streams.
 
 	apiMiddlewares := []func() gin.HandlerFunc{
 		auth.Auth, // Add request logger middleware to the API routes.

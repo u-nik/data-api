@@ -3,14 +3,14 @@
 {
     "name": "Data-API",
     // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-    // "image": "mcr.microsoft.com/devcontainers/go:1-1.22-bookworm",
     "dockerComposeFile": "../docker/compose.dev.yml",
     "workspaceFolder": "/workspace",
     "service": "devcontainer",
 
     // Features to add to the dev container. More info: https://containers.dev/features.
     "features": {
-        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+        "ghcr.io/devcontainers/features/node:1": {}
     },
 
     // Configure tool-specific properties.
@@ -37,21 +37,24 @@
     },
 
     // Use 'forwardPorts' to make a list of ports inside the container available locally.
-    "forwardPorts": [8080, 8089, 8090, 4444, 4445],
+    "forwardPorts": [8080, 8089, 8090, 4444, 4445, 5137],
 
     // Use 'portsAttributes' to set default properties for specific forwarded ports.
     // More info: https://containers.dev/implementors/json_reference/#port-attributes
     "portsAttributes": {
-        "8080": {
-            "label": "Backend API",
-            "onAutoForward": "ignore"
-        },
         "4444": {
             "label": "Hydra Auth API",
             "onAutoForward": "ignore"
         },
         "4445": {
             "label": "Hydra Admin API",
+            "onAutoForward": "ignore"
+        },
+        "5173": {
+            "label": "Data API UI"
+        },
+        "8080": {
+            "label": "Data API Backend",
             "onAutoForward": "ignore"
         },
         "8089": {
