@@ -1,27 +1,34 @@
 'use client';
 
 import {useState} from 'react';
-import {webauthnLogin} from './WebAuthn';
+import {webauthnRegister} from './WebAuthn';
 
-export default function PasskeyLogin() {
+export default function PasskeyRegister() {
     const [username, setUsername] = useState('');
     const [message, setMessage] = useState('');
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [registered, setRegistered] = useState(false);
 
-    const handleLogin = async () => {
-        await webauthnLogin(username, setMessage, setIsLoggedIn);
+    const handleRegister = async () => {
+        const ok = await webauthnRegister(username, setMessage);
+        if (ok) setRegistered(true);
     };
 
-    if (isLoggedIn) {
+    if (registered) {
         return (
-            <div>Welcome, {username}! You are logged in with a Passkey.</div>
+            <div>
+                Registration successful! You can now{' '}
+                <a href='/login' className='text-blue-600 underline'>
+                    login
+                </a>
+                .
+            </div>
         );
     }
 
     return (
         <div className='max-w-md mx-auto mt-12 p-8 bg-white rounded-xl shadow-md border border-gray-200'>
             <h2 className='text-2xl font-bold mb-6 text-center'>
-                Login with Passkey
+                Register with Passkey
             </h2>
             <input
                 type='text'
@@ -32,10 +39,10 @@ export default function PasskeyLogin() {
             />
             <div className='flex gap-4 mb-4'>
                 <button
-                    onClick={handleLogin}
-                    className='flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded transition-colors'
+                    onClick={handleRegister}
+                    className='flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded transition-colors'
                 >
-                    Login
+                    Register
                 </button>
             </div>
             {message && (
