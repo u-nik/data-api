@@ -16,6 +16,7 @@ import (
 
 func (h UserHandler) SetupRoutes(api *gin.RouterGroup) {
 	users := api.Group("/admin/users")
+	users.Use(auth.Auth())
 	users.Use(auth.RequireScope("admin.users.read")) // Create a new route group for user-related endpoints.
 	{
 		// Retrieve all users.

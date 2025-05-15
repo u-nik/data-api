@@ -6,6 +6,7 @@ import (
 	"context"
 	_ "data-api/api"
 	"data-api/internal/auth"
+	"data-api/internal/db"
 	"data-api/internal/handlers"
 	_ "data-api/internal/handlers/user"
 	_ "data-api/internal/handlers/webauthn"
@@ -40,6 +41,12 @@ func main() {
 
 	zap.L().Sugar().Info("Starting Data API...")
 
+	// Initialize Bun DB
+	if err := db.Init(); err != nil {
+		zap.L().Fatal("Failed to initialize Bun/PostgreSQL DB", zap.Error(err))
+	}
+	zap.L().Sugar().Info("Connected to PostgreSQL via Bun ORM")
+
 	auth.Initialize() // Set up OIDC authentication middleware.
 
 	r := gin.New() // Initialize the Gin router.
@@ -63,9 +70,7 @@ func main() {
 	stream.Initialize(utils.GetEnv("NATS_URL", "localhost:4222"), handlerMap)
 	stream.RegisterSubscribers(ctx, rdb, handlerMap) // Set up the subscribers for the event streams.
 
-	apiMiddlewares := []func() gin.HandlerFunc{
-		auth.Auth, // Add request logger middleware to the API routes.
-	}
+	apiMiddlewares := []func() gin.HandlerFunc{}
 
 	SetupRoutes(r, handlerMap, apiMiddlewares, zap.L()) // Set up the routes for the Gin router.
 

@@ -1,7 +1,9 @@
 package webauthn
 
 import (
+	"crypto/rand"
 	"data-api/internal/handlers"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 
@@ -30,6 +32,12 @@ func (h *WebAuthnHandler) SetupRoutes(rg *gin.RouterGroup) {
 	webauthn.POST("/login/verify", h.LoginVerify)
 }
 
+func randomB64(n int) string {
+	b := make([]byte, n)
+	_, _ = rand.Read(b)
+	return base64.RawURLEncoding.EncodeToString(b)
+}
+
 func (h *WebAuthnHandler) RegisterOptions(c *gin.Context) {
 	var req struct {
 		Username string `json:"username"`
@@ -38,12 +46,18 @@ func (h *WebAuthnHandler) RegisterOptions(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "username required"})
 		return
 	}
-	// Return dummy options (replace with real WebAuthn options)
+	// Return a valid WebAuthn PublicKeyCredentialCreationOptions JSON
 	options := gin.H{
-		"challenge":        "dummy-challenge",
-		"rp":               gin.H{"name": "Data API"},
-		"user":             gin.H{"id": req.Username, "name": req.Username},
+		"challenge": randomB64(32),
+		"rp":        gin.H{"name": "Data API", "id": "localhost"},
+		"user": gin.H{
+			"id":          base64.RawURLEncoding.EncodeToString([]byte(req.Username)),
+			"name":        req.Username,
+			"displayName": req.Username,
+		},
 		"pubKeyCredParams": []gin.H{{"type": "public-key", "alg": -7}},
+		"timeout":          60000,
+		"attestation":      "none",
 	}
 	c.JSON(http.StatusOK, options)
 }

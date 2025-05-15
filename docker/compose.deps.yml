@@ -11,7 +11,7 @@ services:
     redis:
         image: redis:7-alpine
 
-    database:
+    postgresql:
         image: postgres:17-alpine
         ports:
             - '5432:5432'
@@ -26,7 +26,7 @@ services:
     hydra-migrate:
         image: oryd/hydra:latest
         depends_on:
-            - database
+            - postgresql
         env_file:
             - ./env/hydra.env
         command: migrate sql -e --yes
