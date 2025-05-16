@@ -2,10 +2,10 @@
 
 import {useState} from 'react';
 import {webauthnRegister} from './WebAuthn';
-import {Heading} from './catalyst/heading';
-import {Field, Label} from './catalyst/fieldset';
-import {Input} from './catalyst/input';
-import {Button} from './catalyst/button';
+import {Heading} from './ui/heading';
+import {Field, Label} from './ui/fieldset';
+import {Input} from './ui/input';
+import {Button} from './ui/button';
 
 export default function PasskeyRegister() {
     const [username, setUsername] = useState('');
@@ -30,7 +30,7 @@ export default function PasskeyRegister() {
     }
 
     return (
-        <div className='grid w-full max-w-sm grid-cols-1 gap-8'>
+        <div className='grid gap-8'>
             <Heading>Register with Passkey</Heading>
             <Field>
                 <Label>Username</Label>
