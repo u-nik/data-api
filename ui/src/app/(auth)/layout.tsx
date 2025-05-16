@@ -1,9 +1,8 @@
-import {ReactNode} from 'react';
+import React from 'react';
+import {AuthLayout} from '@/components/catalyst/auth-layout';
 
-export default function AuthLayout({children}: {children: ReactNode}) {
-    return (
-        <div className='min-h-screen flex flex-col items-center justify-center bg-gray-50'>
-            {children}
-        </div>
-    );
+export default function RootLayout({
+    children,
+}: Readonly<{children: React.ReactNode}>) {
+    return <AuthLayout>{children}</AuthLayout>;
 }

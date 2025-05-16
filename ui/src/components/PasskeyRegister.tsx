@@ -2,6 +2,10 @@
 
 import {useState} from 'react';
 import {webauthnRegister} from './WebAuthn';
+import {Heading} from './catalyst/heading';
+import {Field, Label} from './catalyst/fieldset';
+import {Input} from './catalyst/input';
+import {Button} from './catalyst/button';
 
 export default function PasskeyRegister() {
     const [username, setUsername] = useState('');
@@ -26,25 +30,22 @@ export default function PasskeyRegister() {
     }
 
     return (
-        <div className='max-w-md mx-auto mt-12 p-8 bg-white rounded-xl shadow-md border border-gray-200'>
-            <h2 className='text-2xl font-bold mb-6 text-center'>
-                Register with Passkey
-            </h2>
-            <input
-                type='text'
-                placeholder='Username'
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className='w-full mb-4 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400'
-            />
-            <div className='flex gap-4 mb-4'>
-                <button
-                    onClick={handleRegister}
-                    className='flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded transition-colors'
-                >
-                    Register
-                </button>
-            </div>
+        <div className='grid w-full max-w-sm grid-cols-1 gap-8'>
+            <Heading>Register with Passkey</Heading>
+            <Field>
+                <Label>Username</Label>
+                <Input
+                    placeholder='Username'
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    autoComplete='username webauthn'
+                    autoFocus={true}
+                ></Input>
+            </Field>
+            <Button type='submit' className='w-full' onClick={handleRegister}>
+                Register
+            </Button>
+
             {message && (
                 <div
                     className={`mt-4 text-center font-medium ${
