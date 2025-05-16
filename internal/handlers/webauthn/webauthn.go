@@ -15,7 +15,8 @@ var _ handlers.HandlerInterface = (*WebAuthnHandler)(nil)
 
 // In-memory store for demonstration (replace with DB/Redis in production)
 var (
-	userCredentials = make(map[string]interface{})
+	userCredentials   = make(map[string]interface{})
+	userCredentialIDs = make(map[string][]string) // username -> []credentialID
 )
 
 type WebAuthnHandler struct{}
@@ -64,8 +65,8 @@ func (h *WebAuthnHandler) RegisterOptions(c *gin.Context) {
 
 func (h *WebAuthnHandler) RegisterVerify(c *gin.Context) {
 	var req struct {
-		Username    string      `json:"username"`
-		Attestation interface{} `json:"attestation"`
+		Username    string                 `json:"username"`
+		Attestation map[string]interface{} `json:"attestation"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil || req.Username == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
@@ -73,6 +74,11 @@ func (h *WebAuthnHandler) RegisterVerify(c *gin.Context) {
 	}
 	// Store attestation (replace with real verification)
 	userCredentials[req.Username] = req.Attestation
+
+	// Extract credential ID from attestation response
+	if id, ok := req.Attestation["id"].(string); ok {
+		userCredentialIDs[req.Username] = []string{id}
+	}
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
@@ -80,14 +86,22 @@ func (h *WebAuthnHandler) LoginOptions(c *gin.Context) {
 	var req struct {
 		Username string `json:"username"`
 	}
-	if err := c.ShouldBindJSON(&req); err != nil || req.Username == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "username required"})
-		return
+	_ = c.ShouldBindJSON(&req) // Don't fail if username is missing
+
+	allowCredentials := []gin.H{}
+	if req.Username != "" {
+		credIDs := userCredentialIDs[req.Username]
+		for _, id := range credIDs {
+			allowCredentials = append(allowCredentials, gin.H{
+				"id":   id,
+				"type": "public-key",
+			})
+		}
 	}
-	// Return dummy options (replace with real WebAuthn options)
 	options := gin.H{
-		"challenge":        "dummy-challenge",
-		"allowCredentials": []gin.H{{"id": req.Username, "type": "public-key"}},
+		"challenge":        randomB64(32),
+		"userVerification": "required",
+		"allowCredentials": allowCredentials, // empty if username not provided
 	}
 	c.JSON(http.StatusOK, options)
 }

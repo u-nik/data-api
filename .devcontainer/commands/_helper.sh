@@ -192,7 +192,8 @@ installCertificate() {
         echo "⚠️ WARNING: Cannot install trusted root certificate due to missing admin privileges."
     fi
 
-    mkcert ${1}
+    mkdir -p .certs
+    mkcert -cert-file .certs/${1}.pem -key-file .certs/${1}-key.pem ${1}
 }
 
 # Checks if the current user has administrative privileges
@@ -211,13 +212,13 @@ hasAdminPrivileges() {
 
     if isLinux; then
         # Check if the current user is in the admin group
-        if groups | grep -q '\badmin\b'; then
+        if groups | grep -q '\bsudo\b'; then
             return 0
         fi
 
     elif isMacOS; then
         # Check if the current user is in the sudo group
-        if groups | grep -q '\bsudo\b'; then
+        if groups | grep -q '\badmin\b'; then
             return 0
         fi
     fi
@@ -228,4 +229,21 @@ hasAdminPrivileges() {
     fi
 
     return 1
+}
+
+# Fügt einen Hostnamen zu /etc/hosts hinzu, falls er noch nicht existiert
+# Usage: addHostname app.localhost
+addHostname() {
+    local hostname="$1"
+    if [ -z "$hostname" ]; then
+        echo "Hostname fehlt!"
+        return 1
+    fi
+
+    if grep -q "[[:space:]]$hostname" /etc/hosts; then
+        printf "✅ '%s' is already in the hosts file.\n" "${hostname}"
+    else
+        echo "127.0.0.1 $hostname" | sudo tee -a /etc/hosts >/dev/null
+        printf "✅ '%s' wurde erfolgreich hinzugefügt.\n" "${hostname}"
+    fi
 }

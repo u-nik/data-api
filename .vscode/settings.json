@@ -36,5 +36,8 @@
             "clientId": "data-api-client",
             "clientSecret": "superSecret",
         },
+    },
+    "[dotenv]": {
+        "editor.defaultFormatter": "foxundermoon.shell-format"
     }
 }

@@ -15,6 +15,10 @@ services:
         working_dir: /workspace
         env_file:
             - ./env/api.env
+        networks:
+            default:
+                aliases:
+                    - app.localhost
 
     nats-nui:
         image: ghcr.io/nats-nui/nui:latest

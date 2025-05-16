@@ -1,7 +1,5 @@
 main
 bin
 vendor
-
-localhost-key.pem
-localhost.pem
+.certs
 test-results.xml

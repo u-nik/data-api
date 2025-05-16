@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "next dev --hostname 0.0.0.0",
+        "dev": "next dev --hostname 0.0.0.0 -p 3000 --experimental-https --experimental-https-cert ../.certs/app.localhost.pem --experimental-https-key ../.certs/app.localhost-key.pem",
         "build": "next build",
         "start": "next start",
         "lint": "next lint"
@@ -28,7 +28,7 @@
         "eslint": "^9",
         "eslint-config-next": "15.3.2",
         "postcss": "^8.5.3",
-        "tailwindcss": "^4.1.6",
+        "tailwindcss": "^4.1.7",
         "typescript": "^5"
     }
 }

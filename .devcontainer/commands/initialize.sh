@@ -13,32 +13,22 @@ checkLocalDependencies
 
 # Create certificate, if not already existing or not valid
 drawHeader "🔐 Generating SSL certificates..."
-if ! isCertValid localhost; then
-    installCertificate localhost
+if ! isCertValid app.localhost; then
+    installCertificate app.localhost
 else
     echo "⚠️ Skipping: Certificate already exists and still valid."
     echo "If you want to update the certificate, please delete it and rebuild the dev container."
-    echo "You can also run the command manually: mkcert -install && mkcert localhost"
+    echo "You can also run the command manually: mkcert -install && mkcert app.localhost"
 fi
 
-HYDRA_HOST="hydra.localhost"
-HOSTS_FILE="/etc/hosts"
-ENTRY="127.0.0.1 $HYDRA_HOST"
-drawHeader "🔗 Setup ${HYDRA_HOST} domain..."
-
-# Prüfen, ob der Eintrag schon vorhanden ist
-if grep -qE "^\s*127\.0\.0\.1\s+.*\bhydra\.localhost\b" "$HOSTS_FILE"; then
-    printf "✅ '%s' is already in the hosts file.\n" "${HYDRA_HOST}"
+if ! isCertValid hydra.localhost; then
+    installCertificate hydra.localhost
 else
-    echo "➕ Füge 'hydra.localhost' zur hosts-Datei hinzu..."
-    # Temporäre Datei erzeugen
-    TMP_FILE=$(mktemp)
-    cp "$HOSTS_FILE" "$TMP_FILE"
-    echo "$ENTRY" >>"$TMP_FILE"
-
-    # Mit sudo zurückkopieren
-    sudo cp "$TMP_FILE" "$HOSTS_FILE"
-    rm "$TMP_FILE"
-
-    printf "✅ '%s' wurde erfolgreich hinzugefügt.\n" "${HYDRA_HOST}"
+    echo "⚠️ Skipping: Certificate already exists and still valid."
+    echo "If you want to update the certificate, please delete it and rebuild the dev container."
+    echo "You can also run the command manually: mkcert -install && mkcert hydra.localhost"
 fi
+
+drawHeader "🔗 Setup local hostnames..."
+addHostname app.localhost
+addHostname hydra.localhost

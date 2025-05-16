@@ -7,11 +7,11 @@ export async function webauthnRegister(
 ) {
     setMessage('');
     try {
-        const {data: options} = await axios.post(
+        const {data: optionsJSON} = await axios.post(
             '/api/webauthn/register/options',
             {username},
         );
-        const attResp = await startRegistration(options);
+        const attResp = await startRegistration({optionsJSON});
         await axios.post('/api/webauthn/register/verify', {
             username,
             attestation: attResp,
@@ -30,14 +30,18 @@ export async function webauthnLogin(
     username: string,
     setMessage: (msg: string) => void,
     setIsLoggedIn: (v: boolean) => void,
+    conditional: boolean = true,
 ) {
     setMessage('');
     try {
-        const {data: options} = await axios.post(
+        const {data: optionsJSON} = await axios.post(
             '/api/webauthn/login/options',
             {username},
         );
-        const assertionResp = await startAuthentication(options);
+        const assertionResp = await startAuthentication({
+            optionsJSON,
+            ...(conditional ? {mediation: 'conditional'} : {}),
+        });
         await axios.post('/api/webauthn/login/verify', {
             username,
             assertion: assertionResp,
