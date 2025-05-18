@@ -1,27 +1,67 @@
 # Create a new OAuth 2.0 client in Hydra
-# @name createClient
+# @name createUIClient
 POST {{hydraAdminUrl}}/clients
 Content-Type: application/json
 Accept: application/json
 
 {
-    "client_id": "{{clientId}}",
+    "client_id": "{{clientId}}-ui",
     "client_secret": "{{clientSecret}}",
-    "grant_types": ["client_credentials"],
-    "response_types": ["token"],
+    "grant_types": [
+        "authorization_code",
+        "refresh_token"
+    ],
+    "response_types": [
+        "code",
+        "id_token",
+        "token"
+    ],
     "scope": "{{allScopes}}",
-    "audience": ["{{clientId}}"]
+    "audience": ["{{clientId}}-ui"],
+    "redirect_uris": [
+        "{{redirectUri}}"
+    ],
+    "token_endpoint_auth_method": "none"
 }
 
 ###
 
-# @name getClient
-GET {{hydraAdminUrl}}/clients/{{clientId}}
+# @name getUIClient
+GET {{hydraAdminUrl}}/clients/{{clientId}}-ui
 Content-Type: application/json
 Accept: application/json
 
 ###
 
-# @name deleteClient
-DELETE {{hydraAdminUrl}}/clients/{{clientId}}
+# @name deleteUIClient
+DELETE {{hydraAdminUrl}}/clients/{{clientId}}-ui
+Accept: application/json
+
+###
+
+# @name createAPIClient
+POST {{hydraAdminUrl}}/clients
+Content-Type: application/json
+Accept: application/json
+
+{
+    "client_id": "{{clientId}}-api",
+    "client_secret": "{{clientSecret}}",
+    "grant_types": ["client_credentials"],
+    "response_types": ["token"],
+    "scope": "{{allScopes}}",
+    "audience": ["{{clientId}}-api"]
+}
+
+###
+
+# @name getAPIClient
+GET {{hydraAdminUrl}}/clients/{{clientId}}-api
+Content-Type: application/json
+Accept: application/json
+
+###
+
+# @name deleteAPIClient
+DELETE {{hydraAdminUrl}}/clients/{{clientId}}-api
 Accept: application/json

@@ -20,7 +20,7 @@
             "cwd": "${workspaceFolder}",
             "env": {},
             "args": [],
-            "buildFlags": ""
+            "buildFlags": ["-tags=migrate"]
 
         }
     ]

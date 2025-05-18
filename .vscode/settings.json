@@ -26,8 +26,8 @@
     "shellformat.path": "/go/bin/shfmt",
     "rest-client.environmentVariables": {
         "$shared": {
-            "allScopes": "admin.users.read admin.users.create admin.users.update admin.users.delete",
-            "scope": "admin.users.read",
+            "allScopes": "openid profile email users.read users.create users.update users.delete invitations.read invitations.create invitations.update invitations.delete",
+            "scope": "users.read users.create users.update users.delete invitations.read invitations.create invitations.update invitations.delete",
         },
         "dev": {
             "dataApiUrl": "http://localhost:8080",
@@ -35,6 +35,7 @@
             "hydraAdminUrl": "http://hydra.localhost:4445/admin",
             "clientId": "data-api-client",
             "clientSecret": "superSecret",
+            "redirectUri": "https://app.localhost:3000/callback",
         },
     },
     "[dotenv]": {

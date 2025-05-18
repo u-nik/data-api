@@ -2,15 +2,15 @@
 GO := go
 GOW := gow
 APP_NAME := server
-CMD_DIR := ./cmd/server
+CMD_DIR := ./cmd
 BUILD_DIR := ./bin
 GOARCH := $(if $(GOARCH),$(GOARCH),$(shell uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/'))
 
 # Standardziele
-.PHONY: all build run test clean watch generate
+.PHONY: all build run test clean watch generate migrate ui ui-build
 
 # Standardziel: Build
-all: build
+all: build ui-build
 
 # Build des Projekts
 build: generate
@@ -18,12 +18,18 @@ build: generate
 	CGO_ENABLED=0 $(GO) build -o $(BUILD_DIR)/$(APP_NAME) -ldflags="-s -w" $(CMD_DIR)/
 
 # Projekt ausführen
-run:
-	$(GO) run $(CMD_DIR)/
+run: migrate
+	@echo "Running $(APP_NAME) ($(GOARCH))..."
+	$(GO) run $(CMD_DIR)/server/ run
+
+migrate:
+	@echo "Running migrations..."
+	$(GO) run $(CMD_DIR)/migrate/
 
 # Projekt ausführen mit Go Watch (GOW)
-watch:
-	$(GOW) run $(CMD_DIR)/
+watch: migrate
+	@echo "Running $(APP_NAME) ($(GOARCH)) with GOW..."
+	$(GOW) run $(CMD_DIR)/server/ run
 
 # Tests ausführen
 test:
@@ -44,3 +50,12 @@ generate:
 	$(GO) mod vendor
 	$(GO) mod verify
 	$(GO) generate ./...
+
+ui:
+	@echo "Running UI in dev mode..."
+	npm run dev --prefix ui
+
+ui-build:
+	@echo "Building UI..."
+	npm install --prefix ui
+	npm run build --prefix ui

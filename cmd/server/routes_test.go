@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -8,6 +9,7 @@ import (
 	"data-api/internal/handlers"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
@@ -24,6 +26,11 @@ func (m *mockHandler) SetupRoutes(rg *gin.RouterGroup) {
 
 func (m *mockHandler) GetSubject() string {
 	return "mock-subject"
+}
+
+func (m *mockHandler) Subscribe(ctx context.Context, js nats.JetStreamContext, logger *zap.SugaredLogger) bool {
+	// Mock subscription logic
+	return false
 }
 
 var middlewares = []func() gin.HandlerFunc{}

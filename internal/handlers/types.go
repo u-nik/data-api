@@ -17,8 +17,9 @@ type BaseHandler struct {
 }
 
 type HandlerInterface interface {
-	GetSubject() string             // Method to get the subject for the handler.
-	SetupRoutes(g *gin.RouterGroup) // Method to create routes for the handler.
+	GetSubject() string                                                                      // Method to get the subject for the handler.
+	SetupRoutes(g *gin.RouterGroup)                                                          // Method to create routes for the handler.
+	Subscribe(ctx context.Context, js nats.JetStreamContext, logger *zap.SugaredLogger) bool // New: custom subscriber registration
 }
 
 type HandlerFactory func(baseHandler BaseHandler) HandlerInterface

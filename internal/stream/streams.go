@@ -3,11 +3,9 @@ package stream
 import (
 	"context"
 	"data-api/internal/handlers"
-	"encoding/json"
 	"log"
 	"time"
 
-	"github.com/bytedance/sonic"
 	"github.com/go-redis/redis/v8"
 	"github.com/nats-io/nats.go"
 	"go.uber.org/zap"
@@ -75,41 +73,11 @@ func RegisterSubscribers(
 ) {
 	for name, handler := range handlerMap {
 		go func(h handlers.HandlerInterface, name string) {
-			subject := h.GetSubject()
-			zap.L().Sugar().Infoln("Register message subscriber for package:", name)
-			sub, err := (*Context).Subscribe(subject, func(msg *nats.Msg) {
-				var evt map[string]interface{}
-				if err := json.Unmarshal(msg.Data, &evt); err != nil {
-					zap.L().Sugar().Errorf("Error unmarshaling event: %v", err)
-					return
-				}
-
-				id, ok := evt["id"].(string)
-				if !ok {
-					zap.L().Sugar().Infoln("Event has no ID field or ID is not a string")
-					return
-				}
-
-				// Store the event data in Redis as the read model.
-				val, err := sonic.Marshal(evt)
-				if err != nil {
-					zap.L().Sugar().Errorf("Error marshaling event: %v", err)
-					return
-				}
-
-				if err := rdb.Set(ctx, name+":"+id, val, 0).Err(); err != nil {
-					zap.L().Sugar().Errorf("Error storing in Redis: %v", err)
-					return
-				}
-
-				zap.L().Sugar().Debugf("Stored %s data in Redis: %s", name, id)
-			}, nats.Durable("read-model-"+name))
-
-			if err != nil {
-				zap.L().Sugar().Errorf("Error subscribing to subject %s: %v", subject, err)
+			logger := zap.L().Sugar()
+			if h.Subscribe(ctx, *Context, logger) {
+				logger.Infof("Subscribers registered for handler '%s'", name)
 				return
 			}
-			zap.L().Sugar().Infof("Subscribed to subject %s with ID %s", subject, sub.Subject)
 		}(handler, name)
 	}
 }

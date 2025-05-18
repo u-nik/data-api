@@ -37,6 +37,8 @@ func Initialize() {
 			log.Fatalf("Failed to create OIDC provider: %v", err)
 		}
 
+		zap.L().Sugar().Infof("Initialize verifier with client ID: %s", clientID)
+		// Set up the OIDC provider with the issuer URL
 		// Create an ID token verifier
 		Verifier = provider.Verifier(&goOidc.Config{
 			ClientID: clientID,

@@ -36,6 +36,7 @@ func Auth() gin.HandlerFunc {
 			return
 		}
 
+		zap.L().Sugar().Infof("Request authorized for user: %s", claims.Subject)
 		c.Set("claims", claims)
 		c.Next()
 	}

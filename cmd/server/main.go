@@ -4,16 +4,17 @@ package main
 
 import (
 	"context"
-	_ "data-api/api"
 	"data-api/internal/auth"
 	"data-api/internal/db"
 	"data-api/internal/handlers"
-	_ "data-api/internal/handlers/user"
+	_ "data-api/internal/handlers/invitations"
+	_ "data-api/internal/handlers/users"
 	_ "data-api/internal/handlers/webauthn"
 	"data-api/internal/logger"
 	"data-api/internal/schema"
 	"data-api/internal/stream"
 	"data-api/internal/utils"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
@@ -35,11 +36,16 @@ var (
 // @name 			Authorization
 // @description 	Trage deinen Bearer Token ein: "Bearer &lt;token&gt;"
 func main() {
+	if len(os.Args) < 2 {
+		zap.L().Fatal("No mode specified. Usage: server [run]")
+	}
+	mode := os.Args[1]
+
 	// Initialize Logger
 	logger.Init()
 	defer func() { _ = zap.L().Sync() }() // Ensure all buffered log entries are flushed before the program exits.
 
-	zap.L().Sugar().Info("Starting Data API...")
+	zap.L().Sugar().Info("Starting Data API Server...")
 
 	// Initialize Bun DB
 	if err := db.Init(); err != nil {
@@ -47,6 +53,15 @@ func main() {
 	}
 	zap.L().Sugar().Info("Connected to PostgreSQL via Bun ORM")
 
+	switch mode {
+	case "run":
+		runServer()
+	default:
+		zap.L().Fatal("Unknown mode. Usage: server [run]")
+	}
+}
+
+func runServer() {
 	auth.Initialize() // Set up OIDC authentication middleware.
 
 	r := gin.New() // Initialize the Gin router.

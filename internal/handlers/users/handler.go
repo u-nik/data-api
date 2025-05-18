@@ -1,9 +1,10 @@
-package user
+package users
 
 import (
 	_ "data-api/api"
 	"data-api/internal/auth"
 	"data-api/internal/schema"
+	"data-api/internal/stream"
 	"net/http"
 	"time"
 
@@ -15,9 +16,9 @@ import (
 )
 
 func (h UserHandler) SetupRoutes(api *gin.RouterGroup) {
-	users := api.Group("/admin/users")
+	users := api.Group("/users")
 	users.Use(auth.Auth())
-	users.Use(auth.RequireScope("admin.users.read")) // Create a new route group for user-related endpoints.
+	users.Use(auth.RequireScope(ScopeRead)) // Create a new route group for user-related endpoints.
 	{
 		// Retrieve all users.
 		users.GET("/", h.ListUsers)
@@ -25,8 +26,13 @@ func (h UserHandler) SetupRoutes(api *gin.RouterGroup) {
 		// Retrieve user data by ID.
 		users.GET("/:id", h.GetUser)
 
-		// Create a new user.
-		users.POST("/", auth.RequireScope("admin.users.create"), schema.JSONSchemaValidator("user"), h.CreateUser)
+		// Invite a new user.
+		users.POST(
+			"/",
+			auth.RequireScope(ScopeCreate),
+			schema.JSONSchemaValidator("users-create"),
+			h.CreateUser,
+		)
 	}
 }
 
@@ -96,14 +102,14 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	var input UserInput
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	var input UserCreateInput
+	if err := schema.ShouldBindValidInput(c, &input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to bind valid input", "details": err.Error()})
 		return
 	}
 
 	// Create a empty UserRegistered event.
-	var event = UserCreatedEvent{
+	var event = UserCreateEvent{
 		ID:        uuidObj.String(),
 		UserInput: input,
 		CreatedAt: time.Now().Format(time.RFC3339),
@@ -119,7 +125,7 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 	}
 
 	// Publish the event to the NATS subject.
-	_, err = h.Stream.Publish(h.Subject, data, nats.AckWait(5*time.Second))
+	_, err = (*stream.Context).Publish(h.SubjectPrefix, data, nats.AckWait(5*time.Second))
 	if err != nil {
 		h.Logger.Errorw("Failed to publish event",
 			"error", err,
