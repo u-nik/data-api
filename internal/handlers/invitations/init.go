@@ -2,6 +2,7 @@ package invitations
 
 import (
 	"context"
+	"data-api/internal/const/subjects"
 	"data-api/internal/db"
 	"data-api/internal/entities/invitation"
 	"data-api/internal/handlers"
@@ -20,13 +21,12 @@ func init() {
 
 func NewHandler(baseHandler handlers.BaseHandler) *InvitationsHandler {
 	return &InvitationsHandler{
-		BaseHandler:   baseHandler,
-		SubjectPrefix: SubjectPrefix,
+		BaseHandler: baseHandler,
 	}
 }
 
 func (h InvitationsHandler) GetSubject() string {
-	return h.SubjectPrefix + "*"
+	return subjects.InvitationsPrefix + "*"
 }
 
 func (h InvitationsHandler) Subscribe(ctx context.Context, js nats.JetStreamContext, logger *zap.SugaredLogger) bool {

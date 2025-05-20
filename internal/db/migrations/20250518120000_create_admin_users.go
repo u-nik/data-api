@@ -10,7 +10,7 @@ func init() {
 	Migrations.MustRegister(
 		func(ctx context.Context, db *bun.DB) error {
 			_, err := db.Exec(`
-				CREATE TABLE IF NOT EXISTS admin_users (
+				CREATE TABLE IF NOT EXISTS users (
 					id UUID PRIMARY KEY,
 					email TEXT NOT NULL UNIQUE,
 					password_hash TEXT,
@@ -24,7 +24,7 @@ func init() {
 			return err
 		},
 		func(ctx context.Context, db *bun.DB) error {
-			_, err := db.Exec(`DROP TABLE IF EXISTS admin_users;`)
+			_, err := db.Exec(`DROP TABLE IF EXISTS users;`)
 			return err
 		},
 	)

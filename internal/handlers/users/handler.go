@@ -102,7 +102,7 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	var input UserCreateInput
+	var input UserCreateData
 	if err := schema.ShouldBindValidInput(c, &input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to bind valid input", "details": err.Error()})
 		return
@@ -111,7 +111,7 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 	// Create a empty UserRegistered event.
 	var event = UserCreateEvent{
 		ID:        uuidObj.String(),
-		UserInput: input,
+		Data:      input,
 		CreatedAt: time.Now().Format(time.RFC3339),
 	}
 

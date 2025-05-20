@@ -43,7 +43,7 @@ func (l *schemaLoader) loadJsonSchemas() map[string]*jsonschema.Schema {
 	l.logger.Sugar().Infoln("Loading JSON schemas...")
 
 	// Load JSON schema from a file or define it as a string.
-	return l.loadJsonSchemasFromGlobPattern("./api/schema/**/*.json")
+	return l.loadJsonSchemasFromGlobPattern("./api/schema/*.json")
 }
 
 // loadJsonSchemasFromGlobPattern loads and compiles JSON schemas from files matching the given glob pattern.

@@ -9,11 +9,11 @@ type UserHandler struct {
 
 // UserCreated represents the event structure for a registered user.
 type UserCreateEvent struct {
-	ID        string          `json:"id"`
-	UserInput UserCreateInput `json:"user_data"`
-	CreatedAt string          `json:"created_at"`
+	ID        string         `json:"id"`
+	Data      UserCreateData `json:"data"`
+	CreatedAt string         `json:"created_at"`
 }
 
-type UserCreateInput struct {
+type UserCreateData struct {
 	Email string `json:"email" binding:"required,email"`
 }

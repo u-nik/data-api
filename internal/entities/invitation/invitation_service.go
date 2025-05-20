@@ -15,7 +15,15 @@ import (
 type InvitationService struct {
 	DB      *bun.DB
 	Logger  *zap.SugaredLogger
-	BaseURL string // e.g. https://app.localhost:3000
+	BaseURL string
+}
+
+func NewInvitationService(db *bun.DB, log *zap.SugaredLogger, url string) *InvitationService {
+	return &InvitationService{
+		DB:      db,
+		Logger:  log,
+		BaseURL: url,
+	}
 }
 
 // CreateInvite creates an invite for a user and returns the invite link.
@@ -24,6 +32,7 @@ func (s *InvitationService) CreateInvite(ctx context.Context, userID string) (st
 	if _, err := rand.Read(tokenBytes); err != nil {
 		return "", err
 	}
+
 	token := base64.RawURLEncoding.EncodeToString(tokenBytes)
 	invite := &Invitation{
 		ID:        uuid.NewString(),
@@ -31,11 +40,15 @@ func (s *InvitationService) CreateInvite(ctx context.Context, userID string) (st
 		Token:     token,
 		CreatedAt: time.Now(),
 	}
-	if _, err := s.DB.NewInsert().Model(invite).Exec(ctx); err != nil {
+
+	inviteRepo := NewInvitationRepository(s.DB)
+	if err := inviteRepo.Create(ctx, invite); err != nil {
 		return "", err
 	}
+
 	link := fmt.Sprintf("%s/invite/%s", s.BaseURL, token)
 	s.Logger.Infow("User invite link generated", "user_id", userID, "link", link)
+
 	return link, nil
 }
 

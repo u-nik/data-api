@@ -3,6 +3,8 @@ package invitations
 import (
 	_ "data-api/api"
 	"data-api/internal/auth"
+	"data-api/internal/const/scopes"
+	"data-api/internal/const/subjects"
 	"data-api/internal/schema"
 	"data-api/internal/stream"
 	"net/http"
@@ -16,22 +18,36 @@ import (
 )
 
 func (h InvitationsHandler) SetupRoutes(api *gin.RouterGroup) {
-	users := api.Group("/invitations")
-	users.Use(auth.Auth())
-	users.Use(auth.RequireScope(ScopeRead))
+	g := api.Group("/invitations")
+	g.Use(auth.Auth())
 	{
 		// Retrieve all users.
-		users.GET("/", h.List)
+		g.GET(
+			"/",
+			auth.RequireScope(scopes.Invitations.List),
+			h.List,
+		)
 
 		// Retrieve user data by ID.
-		users.GET("/:id", h.Get)
+		g.GET(
+			"/:id",
+			auth.RequireScope(scopes.Invitations.Read),
+			h.Get,
+		)
 
 		// Invite a new user.
-		users.POST(
+		g.POST(
 			"/",
-			auth.RequireScope(ScopeCreate),
+			auth.RequireScope(scopes.Invitations.Create),
 			schema.JSONSchemaValidator("invitations-create"),
 			h.Create,
+		)
+
+		g.POST(
+			"/accept",
+			auth.RequireScope(scopes.Invitations.Accept),
+			schema.JSONSchemaValidator("invitations-accept"),
+			h.Accept,
 		)
 	}
 }
@@ -102,7 +118,7 @@ func (h InvitationsHandler) Create(c *gin.Context) {
 		return
 	}
 
-	var input InvitationCreateInput
+	var input InvitationCreateData
 	if err := schema.ShouldBindValidInput(c, &input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to bind valid input", "details": err.Error()})
 		return
@@ -111,7 +127,7 @@ func (h InvitationsHandler) Create(c *gin.Context) {
 	// Create a empty UserRegistered event.
 	var event = InvitationCreateEvent{
 		ID:        uuidObj.String(),
-		Input:     input,
+		Data:      input,
 		CreatedAt: time.Now().Format(time.RFC3339),
 	}
 
@@ -123,15 +139,64 @@ func (h InvitationsHandler) Create(c *gin.Context) {
 	}
 
 	// Publish the event to the NATS subject.
-	_, err = (*stream.Context).Publish(SubjectCreate, data, nats.AckWait(5*time.Second))
+	_, err = (*stream.Context).Publish(subjects.Invitations.Create, data, nats.AckWait(5*time.Second))
 	if err != nil {
 		h.Logger.Errorw("Failed to publish event", "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to publish event", "details": err.Error()})
 		return
 	}
 
-	h.Logger.Debugw("Published event", "id", uuidObj.String())
+	h.Logger.Debugw("Published event", "id", uuidObj.String(), "subject", subjects.Invitations.Create)
 
 	// Respond with the created event.
 	c.JSON(http.StatusAccepted, event)
+}
+
+// @Summary      Accept an invitation
+// @Description  Accept an invitation and publish an event to NATS
+// @Tags         admin, users
+// @Security     BearerAuth
+// @Param        id  path      string  true  "User ID"
+// @Param        user  body      UserInput  true  "User data"
+// @Success      202  {object} UserCreatedEvent
+// @Failure      400  {string} string  "bad request"
+// @Failure      401  {string} string  "unauthorized"
+// @Failure      403  {string} string  "forbidden"
+// @Failure      500  {string} string  "internal server error"
+// @Router       /admin/users/{id}/accept [post]
+func (h InvitationsHandler) Accept(c *gin.Context) {
+	var input struct {
+		Token    string `json:"token" binding:"required"`
+		Name     string `json:"name" binding:"required"`
+		Password string `json:"password" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input", "details": err.Error()})
+		return
+	}
+
+	// Marshal event data
+	event := map[string]interface{}{
+		"token":       input.Token,
+		"name":        input.Name,
+		"password":    input.Password,
+		"accepted_at": time.Now().Format(time.RFC3339),
+	}
+	data, err := sonic.Marshal(event)
+	if err != nil {
+		h.Logger.Errorw("Failed to marshal event", "error", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to marshal event"})
+		return
+	}
+
+	// Publish the event to the NATS subject
+	_, err = h.Stream.Publish(subjects.Invitations.Accept, data, nats.AckWait(5*time.Second))
+	if err != nil {
+		h.Logger.Errorw("Failed to publish event", "error", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to publish event", "details": err.Error()})
+		return
+	}
+
+	h.Logger.Debugw("Published invitation accept event", "subject", subjects.Invitations.Accept)
+	c.JSON(http.StatusAccepted, gin.H{"message": "Invitation accepted, processing..."})
 }

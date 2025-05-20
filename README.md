@@ -8,6 +8,12 @@ The Data API is planed as a client-server application.
 
 Open the project in the devcontainer and run `make watch` or `make run` to start the application.
 
+### Migrations
+
+To run migrations: `make migrations-migrate`
+
+To generate a new (empty) migration: `make migrations-generate`
+
 ## Server
 
 The server component of the Data API is designed for high performance and scalability, leveraging Go for its concurrency and efficiency. The key features and functionalities are grouped as follows:

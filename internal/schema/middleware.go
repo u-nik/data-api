@@ -19,11 +19,11 @@ func JSONSchemaValidator(schemaName string) gin.HandlerFunc {
 			return
 		}
 
-		validationResult, err := Validate(schemaName, input)
+		_, err := Validate(schemaName, input)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error":   "Validation failed",
-				"details": validationResult,
+				"error":   "Validation failed against schema " + schemaName,
+				"details": err.Error(),
 			})
 			c.Abort()
 			return

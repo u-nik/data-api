@@ -32,7 +32,8 @@
                 "redhat.vscode-yaml",
                 "streetsidesoftware.code-spell-checker",
                 "yzhang.markdown-all-in-one",
-                "bradlc.vscode-tailwindcss"
+                "bradlc.vscode-tailwindcss",
+                "ckolkman.vscode-postgres"
             ]
         }
     },
