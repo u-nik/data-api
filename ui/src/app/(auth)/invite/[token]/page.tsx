@@ -1,14 +1,14 @@
 'use client';
-import {useState} from 'react';
+import {useState, use} from 'react';
 import {useRouter} from 'next/navigation';
 
 interface InviteTokenPageProps {
-    params: {token: string};
+    params: Promise<{token: string}>;
 }
 
-export default function InviteTokenPage({params}: InviteTokenPageProps) {
+export default function InviteTokenPage(props: InviteTokenPageProps) {
+    const {token} = use(props.params);
     const router = useRouter();
-    const token = params.token;
 
     const [name, setName] = useState('');
     const [password, setPassword] = useState('');

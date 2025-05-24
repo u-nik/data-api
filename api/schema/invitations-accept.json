@@ -1,0 +1,23 @@
+{
+    "type": "object",
+    "properties": {
+        "token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43,}$",
+            "description": "The unique, URL-safe invitation token.",
+            "readOnly": true
+        },
+        "name": {
+            "type": "string",
+            "pattern": "^[\\p{L}\\p{M}\\p{N} .,'’\\-]+$",
+            "description": "The user's name."
+        },
+        "password": {
+            "type": "string",
+            "minLength": 8,
+            "description": "The user's password."
+        }
+    },
+    "required": ["token", "name", "password"],
+    "additionalProperties": false
+}

@@ -2,9 +2,11 @@ package schema
 
 import (
 	"fmt"
+
+	"github.com/kaptinlin/jsonschema"
 )
 
-func (m *Manager) ValidateJSON(dataType string, data any) (interface{}, error) {
+func (m *Manager) ValidateJSON(dataType string, data any) (*jsonschema.List, error) {
 	schema, ok := m.schemas[dataType]
 
 	if !ok {

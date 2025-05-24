@@ -3,6 +3,7 @@ package users
 import (
 	_ "data-api/api"
 	"data-api/internal/auth"
+	"data-api/internal/events"
 	"data-api/internal/schema"
 	"data-api/internal/stream"
 	"net/http"
@@ -102,18 +103,19 @@ func (h UserHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	var input UserCreateData
+	var input events.UserCreateData
 	if err := schema.ShouldBindValidInput(c, &input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to bind valid input", "details": err.Error()})
 		return
 	}
 
 	// Create a empty UserRegistered event.
-	var event = UserCreateEvent{
-		ID:        uuidObj.String(),
-		Data:      input,
-		CreatedAt: time.Now().Format(time.RFC3339),
-	}
+	var event = events.EventFactory(func(b events.BaseEvent) events.UserCreateEvent {
+		return events.UserCreateEvent{
+			BaseEvent: b,
+			Data:      input,
+		}
+	})
 
 	data, err := sonic.Marshal(event)
 	if err != nil {

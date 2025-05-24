@@ -1,4 +1,4 @@
-package main
+package routes
 
 import (
 	"context"
@@ -43,7 +43,7 @@ func TestSetupRoutes(t *testing.T) {
 		handlers := make(map[string]handlers.HandlerInterface)
 		logger := zap.NewNop()
 
-		SetupRoutes(r, handlers, middlewares, logger)
+		Initialize(r, handlers, middlewares, logger)
 
 		// Test if the swagger route is registered.
 		// The swagger route is usually registered at "/swagger/*any" in the SetupRoutes function.
@@ -69,7 +69,7 @@ func TestSetupRoutes(t *testing.T) {
 		}
 		logger := zap.NewNop()
 
-		SetupRoutes(r, handlers, middlewares, logger)
+		Initialize(r, handlers, middlewares, logger)
 
 		req, _ := http.NewRequest(http.MethodGet, "/api/test", nil)
 		w := httptest.NewRecorder()
@@ -101,7 +101,7 @@ func TestSetupRoutes(t *testing.T) {
 		}
 		logger := zap.NewNop()
 
-		SetupRoutes(r, handlers, middlewares, logger)
+		Initialize(r, handlers, middlewares, logger)
 
 		req, _ := http.NewRequest(http.MethodGet, "/api/test", nil)
 		w := httptest.NewRecorder()

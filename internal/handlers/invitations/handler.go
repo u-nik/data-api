@@ -5,6 +5,9 @@ import (
 	"data-api/internal/auth"
 	"data-api/internal/const/scopes"
 	"data-api/internal/const/subjects"
+	"data-api/internal/db"
+	"data-api/internal/entities/invitation"
+	"data-api/internal/events"
 	"data-api/internal/schema"
 	"data-api/internal/stream"
 	"net/http"
@@ -13,11 +16,18 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
-	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 )
 
 func (h InvitationsHandler) SetupRoutes(api *gin.RouterGroup) {
+	// The "/invitations/accept" endpoint is used to accept an invitation.
+	// It must not be protected by authentication.
+	api.POST(
+		"/invitations/accept",
+		schema.JSONSchemaValidator("invitations-accept"),
+		h.Accept,
+	)
+
 	g := api.Group("/invitations")
 	g.Use(auth.Auth())
 	{
@@ -41,13 +51,6 @@ func (h InvitationsHandler) SetupRoutes(api *gin.RouterGroup) {
 			auth.RequireScope(scopes.Invitations.Create),
 			schema.JSONSchemaValidator("invitations-create"),
 			h.Create,
-		)
-
-		g.POST(
-			"/accept",
-			auth.RequireScope(scopes.Invitations.Accept),
-			schema.JSONSchemaValidator("invitations-accept"),
-			h.Accept,
 		)
 	}
 }
@@ -111,25 +114,18 @@ func (h InvitationsHandler) Get(c *gin.Context) {
 // @Failure      500  {string} string  "internal server error"
 // @Router       /admin/users [post]
 func (h InvitationsHandler) Create(c *gin.Context) {
-	// Generate a unique ID for the user.
-	uuidObj, err := uuid.NewV7()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate UUID"})
-		return
-	}
-
-	var input InvitationCreateData
+	var input events.InvitationCreateData
 	if err := schema.ShouldBindValidInput(c, &input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to bind valid input", "details": err.Error()})
 		return
 	}
 
-	// Create a empty UserRegistered event.
-	var event = InvitationCreateEvent{
-		ID:        uuidObj.String(),
-		Data:      input,
-		CreatedAt: time.Now().Format(time.RFC3339),
-	}
+	var event = events.EventFactory(func(b events.BaseEvent) events.InvitationCreateEvent {
+		return events.InvitationCreateEvent{
+			BaseEvent: b,
+			Data:      input,
+		}
+	})
 
 	data, err := sonic.Marshal(event)
 	if err != nil {
@@ -146,7 +142,7 @@ func (h InvitationsHandler) Create(c *gin.Context) {
 		return
 	}
 
-	h.Logger.Debugw("Published event", "id", uuidObj.String(), "subject", subjects.Invitations.Create)
+	h.Logger.Debugw("Published event", "id", event.ID, "subject", subjects.Invitations.Create)
 
 	// Respond with the created event.
 	c.JSON(http.StatusAccepted, event)
@@ -165,23 +161,28 @@ func (h InvitationsHandler) Create(c *gin.Context) {
 // @Failure      500  {string} string  "internal server error"
 // @Router       /admin/users/{id}/accept [post]
 func (h InvitationsHandler) Accept(c *gin.Context) {
-	var input struct {
-		Token    string `json:"token" binding:"required"`
-		Name     string `json:"name" binding:"required"`
-		Password string `json:"password" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input", "details": err.Error()})
+	var input events.InvitationAcceptData
+	if err := schema.ShouldBindValidInput(c, &input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to bind valid input", "details": err.Error()})
 		return
 	}
 
-	// Marshal event data
-	event := map[string]interface{}{
-		"token":       input.Token,
-		"name":        input.Name,
-		"password":    input.Password,
-		"accepted_at": time.Now().Format(time.RFC3339),
+	// Validate the token instead of bearer token.
+	inviteRepo := invitation.NewInvitationRepository(db.DB)
+	_, err := inviteRepo.FindByToken(h.Ctx, input.Token)
+	if err != nil {
+		h.Logger.Errorw("Failed to find invitation by token", "token", input.Token, "error", err)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token", "details": err.Error()})
+		return
 	}
+
+	event := events.EventFactory(func(b events.BaseEvent) events.InvitationAcceptEvent {
+		return events.InvitationAcceptEvent{
+			BaseEvent: b,
+			Data:      input,
+		}
+	})
+
 	data, err := sonic.Marshal(event)
 	if err != nil {
 		h.Logger.Errorw("Failed to marshal event", "error", err)
@@ -189,8 +190,14 @@ func (h InvitationsHandler) Accept(c *gin.Context) {
 		return
 	}
 
+	// Create NATS message with headers for idempotent publishing
+	msg := nats.NewMsg(subjects.Invitations.Accept)
+	msg.Data = data
+	msg.Header = nats.Header{}
+	msg.Header.Set(nats.MsgIdHdr, input.Token) // Use token as idempotency key
+
 	// Publish the event to the NATS subject
-	_, err = h.Stream.Publish(subjects.Invitations.Accept, data, nats.AckWait(5*time.Second))
+	_, err = (*stream.Context).PublishMsg(msg, nats.AckWait(5*time.Second))
 	if err != nil {
 		h.Logger.Errorw("Failed to publish event", "error", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to publish event", "details": err.Error()})

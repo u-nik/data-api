@@ -19,8 +19,8 @@
             "program": "${workspaceFolder}/cmd/server",
             "cwd": "${workspaceFolder}",
             "env": {},
-            "args": [],
-            "buildFlags": ["-tags=migrate"]
+            "args": ["run"],
+            "buildFlags": []
 
         }
     ]

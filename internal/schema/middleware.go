@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"data-api/internal/logger"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -19,11 +20,12 @@ func JSONSchemaValidator(schemaName string) gin.HandlerFunc {
 			return
 		}
 
-		_, err := Validate(schemaName, input)
+		result, err := Validate(schemaName, input)
 		if err != nil {
+			logger.L().Debugf(err.Error())
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error":   "Validation failed against schema " + schemaName,
-				"details": err.Error(),
+				"error":  err.Error(),
+				"result": result,
 			})
 			c.Abort()
 			return

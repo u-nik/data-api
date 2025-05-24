@@ -11,6 +11,7 @@ import (
 	_ "data-api/internal/handlers/users"
 	_ "data-api/internal/handlers/webauthn"
 	"data-api/internal/logger"
+	"data-api/internal/routes"
 	"data-api/internal/schema"
 	"data-api/internal/stream"
 	"data-api/internal/utils"
@@ -87,7 +88,7 @@ func runServer() {
 
 	apiMiddlewares := []func() gin.HandlerFunc{}
 
-	SetupRoutes(r, handlerMap, apiMiddlewares, zap.L()) // Set up the routes for the Gin router.
+	routes.Initialize(r, handlerMap, apiMiddlewares, zap.L()) // Set up the routes for the Gin router.
 
 	// Start the Gin server on port 8080.
 	err := r.Run(utils.GetEnv("SERVER_URL", ":8080"))

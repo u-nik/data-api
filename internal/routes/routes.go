@@ -1,4 +1,4 @@
-package main
+package routes
 
 import (
 	"data-api/internal/handlers"
@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func SetupRoutes(
+func Initialize(
 	r *gin.Engine,
 	handlers map[string]handlers.HandlerInterface,
 	apiMiddlewares []func() gin.HandlerFunc,

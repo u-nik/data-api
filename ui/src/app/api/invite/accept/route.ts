@@ -19,7 +19,10 @@ export async function POST(req: NextRequest) {
     if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         return NextResponse.json(
-            {error: data.error || 'Failed to accept invitation'},
+            {
+                error: data.error || 'Failed to accept invitation',
+                result: data.result || null,
+            },
             {status: 400},
         );
     }

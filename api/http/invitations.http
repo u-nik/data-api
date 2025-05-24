@@ -45,3 +45,16 @@ Content-Type: application/json
 {
   "email": "jane.doe@localhost"
 }
+
+###
+
+# @name acceptInvitation
+POST {{dataApiUrl}}/api/invitations/accept
+Content-Type: application/json
+Accept: application/json
+
+{
+  "token":"sBywCLjm8ccigMCee9UodKn8ToJUUIL9fb-GTA73tDI",
+  "name":"Niklas",
+  "password":"$Test1234"
+}

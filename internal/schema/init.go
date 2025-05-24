@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"github.com/kaptinlin/jsonschema"
 	"go.uber.org/zap"
 )
 
@@ -16,6 +17,6 @@ func Initialize(logger *zap.Logger) {
 }
 
 // Validate checks if the provided data is valid according to the schema for the given dataType
-func Validate(dataType string, data any) (interface{}, error) {
+func Validate(dataType string, data any) (*jsonschema.List, error) {
 	return manager.ValidateJSON(dataType, data)
 }
